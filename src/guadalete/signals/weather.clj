@@ -21,7 +21,7 @@
              (try
                (doseq [p parameters]
                       (let [topic (value-topic (str id "-" p))
-                            value (get-in weather ["currently" p])]
+                            value (get-in weather [:currently (keyword p)])]
                            (mh/publish conn topic (str value))))
                (catch Exception e (str "caught exception: " (.getMessage e))))))
 

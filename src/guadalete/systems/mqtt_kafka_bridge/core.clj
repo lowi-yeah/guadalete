@@ -17,8 +17,7 @@
       ))
 
 (defn- mqtt->kafka [mqtt-topic mqtt-payload]
-       ;(log/debug "mqtt->kafka!" mqtt-topic (String. mqtt-payload "UTF-8"))
-       (let [[signal-type id message-type] (str/split mqtt-topic #"/")
+       (let [[signal-type message-type id] (str/split mqtt-topic #"/")
              message* (parse-string (String. mqtt-payload "UTF-8") true)
              kafka-topic (str signal-type "-" message-type)]
             {:topic   kafka-topic

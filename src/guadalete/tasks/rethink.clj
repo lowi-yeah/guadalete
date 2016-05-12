@@ -50,21 +50,8 @@
       (let [db-connection (:db-connection event)
             table (:rethink/table lifecycle)
             batch (:onyx.core/batch event)
-            signals (map #(assoc (get-in % [:message :data]) :id (get-in % [:message :id])) batch)
-            ]
-
+            signals (map #(assoc (get-in % [:message :data]) :id (get-in % [:message :id])) batch)]
            (upsert! db-connection table signals)
-           (when-not (empty? batch)
-                     (log/debug "write-to-database message:" table (into [] signals))
-                     ;(log/debug "write-to-database batch:" batch)
-                     )
-
-
-           ;(doseq [{:keys [message]} (:onyx.core/batch event)]
-           ;       (-> (r/table table)
-           ;           (r/insert [(:data message)])
-           ;           (r/run db-connection))
-           ;       )
            {}))
 
 (defn connect [event lifecycle]
@@ -72,7 +59,6 @@
             port (:rethink/port lifecycle)
             auth-key (:rethink/auth-key lifecycle)
             db (:rethink/db lifecycle)
-
             db-connection (r/connect :host host :port port :auth-key auth-key :db db)]
            {:db-connection db-connection}))
 

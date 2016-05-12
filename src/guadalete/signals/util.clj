@@ -3,8 +3,8 @@
       [clojure.core.async :refer [go-loop chan timeout alts!]]
       [taoensso.timbre :as log]))
 
-(defn value-topic [id] (str "sgnl/" id "/v"))
-(defn config-topic [id] (str "sgnl/" id "/c"))
+(defn value-topic [id] (str "sgnl/v/" id))
+(defn config-topic [id] (str "sgnl/c/" id))
 
 (defn run
        "Runs a f (fnunction without parameters) every time-in-ms."
