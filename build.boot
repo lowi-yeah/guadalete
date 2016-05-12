@@ -16,7 +16,8 @@
                   [org.onyxplatform/lib-onyx "0.8.12.0-SNAPSHOT"]
                   ;[org.onyxplatform/onyx-sql "0.9.4.0"]
                   [com.taoensso/timbre "4.3.1"]
-                  [thi.ng/math "0.2.1"]])
+                  [thi.ng/math "0.2.1"]
+                  [forecast-clojure "1.0.3"]])
 
 (require
   '[reloaded.repl :as repl :refer [start stop go reset]]
@@ -72,10 +73,14 @@
    :mqtt/id     "guadalete-client"
    :mqtt/topics {"sgnl/+/c" 0 "sgnl/+/v" 0 "swtch/+/v" 0 "swtch/+/c" 0}})
 
+(def forecast-dev-config
+  {:forecast-key "6c6ff80d697e050eff942334032eaa97"})
+
+
 (defn- dev-config
        "Merge the individual component configurations into one big map."
        []
-       (merge zk-dev-config onyx-dev-config kafka-dev-config mqtt-dev-config rethinkdb-dev-config))
+       (merge zk-dev-config onyx-dev-config kafka-dev-config mqtt-dev-config rethinkdb-dev-config forecast-dev-config))
 
 (deftask dev
          "Run a restartable system in the r3pl."

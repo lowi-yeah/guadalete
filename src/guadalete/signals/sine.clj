@@ -5,18 +5,14 @@
       [clojure.core.async :refer [go go-loop <! >! >!! chan timeout alts!]]
       [clojurewerkz.machine-head.client :as mh]
       [thi.ng.math.core :as m]
-      [cheshire.core :as js0n]))
+      [cheshire.core :as js0n]
+      [guadalete.signals.util :refer [value-topic config-topic]]))
 
 
-(defn value-topic [id]
-      (str "sgnl/" id "/v"))
 (def value-atom (atom 0))
-
 (def config-interval 10000)
-(defn config-topic [id]
-      (str "sgnl/" id "/c"))
 (def config-map
-  {:desc "a 4.40Hz sine signal"
+  {:description "a 4.40Hz sine signal"
    :type "analog"
    :name "A-Major/centi"})
 
@@ -56,7 +52,7 @@
            component/Lifecycle
            (start [component]
                   (log/debug "starting SineSignal" mqtt-id)
-                  (let [conn (mh/connect mqtt-broker mqtt-broker)
+                  (let [conn (mh/connect mqtt-broker mqtt-id)
                         value-stop-ch (run-value conn mqtt-id increment interval)
                         config-stop-ch (run-config conn mqtt-id)]
                        (log/info (str "MQTT (" mqtt-id "@" mqtt-broker ")"))

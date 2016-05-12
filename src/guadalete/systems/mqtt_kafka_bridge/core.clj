@@ -17,6 +17,7 @@
       ))
 
 (defn- mqtt->kafka [mqtt-topic mqtt-payload]
+       ;(log/debug "mqtt->kafka!" mqtt-topic (String. mqtt-payload "UTF-8"))
        (let [[signal-type id message-type] (str/split mqtt-topic #"/")
              message* (parse-string (String. mqtt-payload "UTF-8") true)
              kafka-topic (str signal-type "-" message-type)]
@@ -30,7 +31,7 @@
 (defrecord MqttKafkaBridge [topic-map kafka mqtt]
            component/Lifecycle
            (start [component]
-                  (log/info "Starting component: mqtt-kafka-bridge")
+                  (log/info "Starting component: mqtt-kafka-bridge" (:topics mqtt))
                   (let [p (producer {"bootstrap.servers" (:brokers kafka)} (string-serializer) (string-serializer))]
                        (mh/subscribe (:conn mqtt) (:topics mqtt) (partial dispatch! p))
                        component))

@@ -40,3 +40,13 @@
       (merge (rethinkdb) {:table "signal"}))
 
 
+(defn weather-signal []
+      (merge (mqtt) {
+                     ;:value-update-interval  120000        ; two minutes
+                     :value-update-interval  (* 4 1000)
+                     :config-update-interval (* 4 1000)
+                     :parameters             ["temperature" "windSpeed" "cloudCover" "pressure" "ozone" "humidity"]
+                     :config-map             {:type "analog"}
+                     }))
+
+

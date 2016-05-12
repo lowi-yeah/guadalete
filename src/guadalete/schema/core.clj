@@ -14,3 +14,12 @@
               :updated     s/Num                            ; timestamp of last activity
               :created     s/Num                            ; timestamp of first contact
               })
+
+(s/defschema WeatherSignalConfig
+             "Schema for weather signal configuration"
+             {:mqtt-broker            s/Str
+              :mqtt-id                s/Str
+              :parameter              (s/enum "temperature" "windSpeed" "cloudCover" "pressure" "ozone" "humidity")
+              :value-update-interval  s/Num
+              :config-update-interval s/Num
+              })
