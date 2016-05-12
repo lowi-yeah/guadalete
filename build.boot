@@ -15,7 +15,8 @@
                   [org.onyxplatform/onyx-redis "0.9.0.1"]
                   [org.onyxplatform/lib-onyx "0.8.12.0-SNAPSHOT"]
                   ;[org.onyxplatform/onyx-sql "0.9.4.0"]
-                  [com.taoensso/timbre "4.3.1"]])
+                  [com.taoensso/timbre "4.3.1"]
+                  [thi.ng/math "0.2.1"]])
 
 (require
   '[reloaded.repl :as repl :refer [start stop go reset]]

@@ -13,6 +13,7 @@
       [guadalete.systems.kafka-signals :refer [kafka-signals]]
       [guadalete.systems.rethinkdb.core :refer [new-rethinkdb]]
       [guadalete.jobs.signal-configuration.component :refer [signal-configuration-job]]
+      [guadalete.signals.sine :refer [new-sine-signal]]
       ))
 
 (defsystem dev-system
@@ -21,6 +22,7 @@
             :mqtt (new-mqtt (config/mqtt))
             :rethinkdb (new-rethinkdb (config/rethinkdb))
             :mqtt-kafkabridge (component/using (new-mqtt-kafka-bridge (config/kafka)) [:kafka :mqtt])
+            :sine-signal (component/using (new-sine-signal (merge (config/mqtt) {:mqtt-id "sin3" :increment 0.01 :interval 200})) [:kafka :mqtt])
             ;:kafka-signals (component/using (kafka-signals) [:onyx])
             :signal-configuration-job (component/using (signal-configuration-job (config/signal-configuration)) [:onyx])
             ])
@@ -29,3 +31,8 @@
            [:onyx (new-onyx (config/onyx))
             ;:capture-kafka (component/using (new-capture) [:onyx])
             :repl-server (new-repl-server (Integer. (env :repl-port)))])
+
+
+;(def  0.01)
+;(def  200)
+;mqtt-broker mqtt-id value-increment value-interval
