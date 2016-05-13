@@ -4,6 +4,7 @@
       [reloaded.repl :refer [init start stop reset]]
       [guadalete.systems.core :refer [prod-system]]
       [onyx.plugin.kafka]
+      [onyx.plugin.redis]
       ))
 
 (defn -main

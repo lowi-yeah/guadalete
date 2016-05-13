@@ -5,15 +5,17 @@
 
 (defn value-topic [id] (str "sgnl/v/" id))
 (defn config-topic [id] (str "sgnl/c/" id))
+(defn swtch-value-topic [id] (str "swtch/v/" id))
+(defn swtch-config-topic [id] (str "swtch/c/" id))
 
 (defn run
-       "Runs a f (fnunction without parameters) every time-in-ms."
-       [f time-in-ms]
-       (let [stop (chan)]
-            (go-loop []
-                     (let [timeout-ch (timeout time-in-ms)
-                           [v ch] (alts! [timeout-ch stop])]
-                          (when-not (= ch stop)
-                                    (f)
-                                    (recur))))
-            stop))
+      "Runs a f (fnunction without parameters) every time-in-ms."
+      [f time-in-ms]
+      (let [stop (chan)]
+           (go-loop []
+                    (let [timeout-ch (timeout time-in-ms)
+                          [v ch] (alts! [timeout-ch stop])]
+                         (when-not (= ch stop)
+                                   (f)
+                                   (recur))))
+           stop))

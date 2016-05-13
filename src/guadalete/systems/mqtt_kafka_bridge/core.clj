@@ -24,10 +24,12 @@
              :message {:id id :data message*}}))
 
 (defn- dispatch! [kafka-producer ^String mqtt-topic _ ^bytes mqtt-payload]
+
        (let [kafka-map (mqtt->kafka mqtt-topic mqtt-payload)]
+            ;(log/debug "mqtt->kafka!" mqtt-topic (:topic kafka-map) (generate-string (:message kafka-map)))
             (send kafka-producer (record (:topic kafka-map) (generate-string (:message kafka-map))))))
 
-(defrecord MqttKafkaBridge [topic-map kafka mqtt]
+(defrecord MqttKafkaBridge [kafka mqtt]
            component/Lifecycle
            (start [component]
                   (log/info "Starting component: mqtt-kafka-bridge" (:topics mqtt))
@@ -39,5 +41,5 @@
                  (log/info "Stopping component: mqtt-kafka-bridge")
                  component))
 
-(defn new-mqtt-kafka-bridge [config]
-      (map->MqttKafkaBridge config))
+(defn new-mqtt-kafka-bridge []
+      (map->MqttKafkaBridge {}))

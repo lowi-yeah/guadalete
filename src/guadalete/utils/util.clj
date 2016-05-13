@@ -2,7 +2,9 @@
     (:require
       [taoensso.timbre :refer (tracef debugf infof)]
       [cheshire.core :refer :all]
-      [schema.core :as s]))
+      [schema.core :as s]
+      [clj-time.core :as t]
+      [clj-time.coerce :as tc]))
 
 (defn pretty
       "Returns a prettyprinted JSON representation of the argument"
@@ -18,3 +20,8 @@
       "Generic convenience function for converting a collection into a map."
       [map-key collection]
       (into {} (map (fn [x] {(name (get x map-key)) x}) collection)))
+
+(defn now
+      "milliseconds since Unix epoch"
+      []
+      (tc/to-long (t/now)))

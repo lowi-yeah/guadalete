@@ -5,37 +5,39 @@
       [clj-kafka.offset :as offset]
       [onyx.api]
       [taoensso.timbre :as log]
-      [onyx.plugin.core-async :refer [take-segments!]]
       [lib-onyx.log-subscriber :refer [start-log-subscriber stop-log-subscriber]]
       [guadalete.jobs.signal-job :refer [build-job]]
       [guadalete.tasks.core-async :refer [get-core-async-channels]]
       [guadalete.utils.lifecycle :refer [collect-outputs!]]))
 
-(defn- channel-loop [kafka-channel stop-channel subscriber]
+(defn- channel-loop [kafka-channel stop-channel]
        (go-loop []
                 (let [[message ch] (alts! [kafka-channel stop-channel])]
                      (when-not (= ch stop-channel)
-                               (log/debug message)
+                               (log/debug "RawKafkaSignals" message)
                                (recur)))))
 
-(defrecord KafkaSignals [onyx]
+(defrecord RawKafkaSignals [uri read-timeout-ms batch-size onyx]
            component/Lifecycle
            (start [component]
                   (log/info "**** start KafkaSignals")
                   (let [stop-channel (chan)
                         peer-config (:peer-config onyx)
-                        job (build-job :dev)
-                        subscriber (start-log-subscriber peer-config)
+                        redis-config {:redis/uri             uri
+                                      :redis/read-timeout-ms read-timeout-ms
+                                      :onyx/batch-size batch-size}
+                        ;job (build-job :dev)
+                        job (signal-value/build-job redis-config)
                         {:keys [write-messages] :as async-channels} (get-core-async-channels job)
                         {:keys [job-id] :as job-reciept} (onyx.api/submit-job peer-config job)]
-                       (channel-loop write-messages stop-channel subscriber)
-                       (assoc component :stop-channel stop-channel :subscriber subscriber)))
+                       (channel-loop write-messages stop-channel)
+                       (assoc component :job-id job-id :stop-channel stop-channel :peer-config peer-config)))
            (stop [component]
                  (log/info "**** stop KafkaSignals")
+                 (onyx.api/kill-job (:peer-config component) (:job-id component))
                  (>!! (:stop-channel component) "halt!")
-                 (stop-log-subscriber (:subscriber component))
                  (close! (:stop-channel component))
-                 component))
+                 (dissoc component :job-id :stop-channel :peer-config)))
 
-(defn kafka-signals []
-      (map->KafkaSignals {}))
+(defn raw-kafka-signals [config]
+      (map->RawKafkaSignals config))

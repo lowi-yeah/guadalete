@@ -29,7 +29,9 @@
        :db       (get* :rethinkdb/db)
        :tables   (get* :rethinkdb/tables)})
 
-
+(defn redis []
+      {:uri             (get* :redis/uri)
+       :read-timeout-ms (get* :redis/read-timeout-ms)})
 
 (defn mqtt []
       {:mqtt-broker (get* :mqtt/broker)
@@ -39,12 +41,14 @@
 (defn signal-configuration []
       (merge (rethinkdb) {:table "signal"}))
 
+(defn signal-value []
+      (merge (redis) {:batch-size 10}))
 
 (defn weather-signal []
       (merge (mqtt) {
                      ;:value-update-interval  120000        ; two minutes
-                     :value-update-interval  (* 4 1000)
-                     :config-update-interval (* 4 1000)
+                     :value-update-interval  (* 60 1000)
+                     :config-update-interval (* 60 1000)
                      :parameters             ["temperature" "windSpeed" "cloudCover" "pressure" "ozone" "humidity"]
                      :config-map             {:type "analog"}
                      }))

@@ -7,6 +7,7 @@
                   [environ "1.0.2"]
                   [boot-environ "1.0.2"]
                   [cheshire "5.6.1"]
+                  [clj-time "0.11.0"]
                   [clojurewerkz/machine_head "1.0.0-beta9"]
                   [com.apa512/rethinkdb "0.15.19"]
                   [org.clojure/tools.nrepl "0.2.12"]
@@ -14,7 +15,8 @@
                   [org.onyxplatform/onyx-kafka "0.9.4.0"]
                   [org.onyxplatform/onyx-redis "0.9.0.1"]
                   [org.onyxplatform/lib-onyx "0.8.12.0-SNAPSHOT"]
-                  ;[org.onyxplatform/onyx-sql "0.9.4.0"]
+                  [com.taoensso/encore "2.52.1"]
+                  [com.taoensso/carmine "2.12.2"]
                   [com.taoensso/timbre "4.3.1"]
                   [thi.ng/math "0.2.1"]
                   [forecast-clojure "1.0.3"]])
@@ -48,6 +50,9 @@
    :rethinkdb/db       "guadalete"
    :rethinkdb/tables   ["signal" "light" "room"]})
 
+(def redis-dev-config
+  {:redis/uri             "redis://redis1:6379"
+   :redis/read-timeout-ms 1000})
 
 (def kafka-dev-config
   {:kafka/topics [{:name               "sgnl-v"
@@ -80,7 +85,13 @@
 (defn- dev-config
        "Merge the individual component configurations into one big map."
        []
-       (merge zk-dev-config onyx-dev-config kafka-dev-config mqtt-dev-config rethinkdb-dev-config forecast-dev-config))
+       (merge zk-dev-config
+              onyx-dev-config
+              kafka-dev-config
+              mqtt-dev-config
+              rethinkdb-dev-config
+              forecast-dev-config
+              redis-dev-config))
 
 (deftask dev
          "Run a restartable system in the r3pl."

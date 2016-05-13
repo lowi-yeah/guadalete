@@ -27,7 +27,6 @@
             (swap! value-atom #(+ increment %))))
 
 (defn- send-config [conn id]
-       (log/debug id "publish config")
        (mh/publish conn (config-topic id) (js0n/generate-string config-map)))
 
 (defn- run
