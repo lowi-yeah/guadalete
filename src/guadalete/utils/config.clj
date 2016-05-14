@@ -10,6 +10,7 @@
 (defn onyx []
       {
        :n-peers     (get* :onyx.peer/n-peers)
+       ;:n-peers     16
        :peer-config {:zookeeper/address                     (get* :zookeeper/address)
                      :onyx.messaging/impl                   (get* :onyx.messaging/impl)
                      :onyx.peer/job-scheduler               (get* :onyx.peer/job-scheduler)
@@ -17,6 +18,21 @@
                      :onyx.messaging/bind-addr              (get* :onyx.messaging/bind-addr)
                      :onyx.log/config                       (get* :onyx.log/config)
                      :onyx.messaging.aeron/embedded-driver? (get-bool :onyx.messaging.aeron/embedded-driver?)}})
+
+(def onyx-batch*
+  {:batch-size    10
+   :batch-timeout 1000})
+
+(defn onyx-batch []
+      {:onyx/batch-size    (:batch-size onyx-batch*)
+       :onyx/batch-timeout (:batch-timeout onyx-batch*)})
+
+(defn onyx-peer []
+      {:onyx/min-peers 1
+       :onyx/max-peers 1})
+
+(defn onyx-defaults []
+      (merge (onyx-peer) (onyx-batch)))
 
 (defn kafka []
       {:zookeeper-address (get* :zookeeper/address)
@@ -30,8 +46,8 @@
        :tables   (get* :rethinkdb/tables)})
 
 (defn redis []
-      {:uri             (get* :redis/uri)
-       :read-timeout-ms (get* :redis/read-timeout-ms)})
+      {:redis/uri             (get* :redis/uri)
+       :redis/read-timeout-ms (get* :redis/read-timeout-ms)})
 
 (defn mqtt []
       {:mqtt-broker (get* :mqtt/broker)
@@ -53,4 +69,35 @@
                      :config-map             {:type "analog"}
                      }))
 
+(defn weather-signal []
+      (merge (mqtt) {
+                     ;:value-update-interval  120000        ; two minutes
+                     :value-update-interval  (* 60 1000)
+                     :config-update-interval (* 60 1000)
+                     :parameters             ["temperature" "windSpeed" "cloudCover" "pressure" "ozone" "humidity"]
+                     :config-map             {:type "analog"}
+                     }))
+
+(defn kafka-task
+      "Default configuration for onyx-kafka tastks"
+      []
+      (merge (onyx-defaults)
+             {
+              :kafka/fetch-size          307200
+              :kafka/chan-capacity       100
+              :kafka/zookeeper           (get* :zookeeper/address)
+              :kafka/offset-reset        :largest
+              :kafka/force-reset?        true
+              :kafka/empty-read-back-off 50
+              :kafka/commit-interval     50
+              :kafka/deserializer-fn     :guadalete.tasks.kafka/deserialize-message-json
+              :kafka/wrap-with-metadata? false})
+      )
+
+(defn rethink-task []
+      {:rethinkdb/host     (get* :rethinkdb/host)
+       :rethinkdb/port     (get* :rethinkdb/port)
+       :rethinkdb/auth-key (get* :rethinkdb/auth-key)
+       :rethinkdb/db       (get* :rethinkdb/db)
+       :rethinkdb/tables   (get* :rethinkdb/tables)})
 

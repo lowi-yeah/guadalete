@@ -32,25 +32,3 @@
 
 (defn prepare-rows [segment]
   {:rows [segment]})
-
-(def signal-catalog
-  [{:onyx/name :log-signal
-    :onyx/fn ::transform-segment-shape
-    :onyx/type :function
-    :onyx/doc "Logs sensor-data coming in via Kafka"}
-
-   {:onyx/name :prepare-rows
-    :onyx/fn ::prepare-rows
-    :onyx/type :function}])
-
-(s/defschema BatchSettings
-  {(s/required-key :onyx/batch-size) s/Num
-   (s/required-key :onyx/batch-timeout) s/Num})
-
-(s/defn signal-tasks [opts :- BatchSettings]
-  (mapv
-   (fn [catalog-entries]
-     {:task {:task-map (merge
-                        opts
-                        catalog-entries)}})
-   signal-catalog))

@@ -12,9 +12,8 @@
       [guadalete.systems.kafka.core :refer [new-kafka]]
       [guadalete.systems.mqtt.core :refer [new-mqtt]]
       [guadalete.systems.mqtt-kafka-bridge.core :refer [new-mqtt-kafka-bridge]]
-
-      [guadalete.systems.kafka-signals :refer [raw-kafka-signals]]
       [guadalete.systems.rethinkdb.core :refer [new-rethinkdb]]
+      [guadalete.jobs.component :refer [job-runner]]
       [guadalete.jobs.signal.raw.value.component :refer [signal-raw-values]]
       [guadalete.jobs.signal.raw.config.component :refer [signal-raw-config]]
       [guadalete.signals.sine :refer [new-sine-signal]]
@@ -41,6 +40,9 @@
                        ;//       |___/
                        ; some signals used for development/testing
                        :sine-signal (component/using (new-sine-signal (merge (config/mqtt) {:mqtt-id "sin3" :increment 0.01 :interval 2000})) [:kafka :mqtt :mqtt-kafkabridge])
+                       ;:ssine-signal (component/using (new-sine-signal (merge (config/mqtt) {:mqtt-id "ssin3" :increment 0.005 :interval 200})) [:kafka :mqtt :mqtt-kafkabridge])
+                       ;:sssine-signal (component/using (new-sine-signal (merge (config/mqtt) {:mqtt-id "sssin3" :increment 0.02 :interval 400})) [:kafka :mqtt :mqtt-kafkabridge])
+                       ;:ssssine-signal (component/using (new-sine-signal (merge (config/mqtt) {:mqtt-id "ssssin3" :increment 0.04 :interval 800})) [:kafka :mqtt :mqtt-kafkabridge])
                        :weather-signals (component/using (new-weather-signal (merge (config/weather-signal) {:mqtt-id "weather"})) [:kafka :mqtt :mqtt-kafkabridge])
                        :mock-switch (component/using (new-mock-switch (merge (config/mqtt) {:mqtt-id "mock-switch"})) [:kafka :mqtt :mqtt-kafkabridge])
 
@@ -53,12 +55,13 @@
                        ; each job has its own component which can start & stop it.
                        ; whether or not this is a good idea (architecture-wise) remains to be seen…
 
-                       ; processes signal configuration messages coming in via mqtt ( topic: sgnl/c/:id )
-                       ;
-                       :signal-raw-config (component/using (signal-raw-config (config/signal-configuration)) [:onyx])
+                       ;:signal-raw-config (component/using (signal-raw-config (config/signal-configuration)) [:onyx :kafka :mqtt :rethinkdb])
+                       ;:signal-raw-values (component/using (signal-raw-values (config/signal-value)) [:onyx :kafka :mqtt :rethinkdb])
 
-                       ; processes signal value messages coming in via mqtt ( topic: sgnl/v/:id )
-                       :signal-raw-values (component/using (signal-raw-values (config/signal-value)) [:onyx])
+                       ;:job-factory (job-factory)
+                       :job-runner (component/using (job-runner) [:onyx :kafka :mqtt :rethinkdb])
+
+
                        ])
 
 (defsystem prod-system

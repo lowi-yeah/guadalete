@@ -33,8 +33,10 @@
    :zookeeper.server/port 2181})
 
 (def onyx-dev-config
-  {:onyx.peer/n-peers                     4
-   :onyx.peer/job-scheduler               :onyx.job-scheduler/greedy
+  {:onyx.peer/n-peers                     8
+   ;:onyx.peer/job-scheduler               :onyx.job-scheduler/greedy
+   ;:onyx.peer/job-scheduler               :onyx.job-scheduler/round-robin
+   :onyx.peer/job-scheduler               :onyx.job-scheduler/balanced
    :onyx.messaging/impl                   :aeron
    :onyx.messaging/peer-port              40199
    :onyx.messaging/bind-addr              "localhost"
@@ -48,7 +50,7 @@
    :rethinkdb/port     28015
    :rethinkdb/auth-key ""
    :rethinkdb/db       "guadalete"
-   :rethinkdb/tables   ["signal" "light" "room"]})
+   :rethinkdb/tables   ["signal" "light" "room" "switch"]})
 
 (def redis-dev-config
   {:redis/uri             "redis://redis1:6379"

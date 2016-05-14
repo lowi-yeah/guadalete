@@ -12,18 +12,18 @@
 
 
 (s/defschema RethinkSettings
-             {(s/required-key :rethink/host)     s/Str
-              (s/required-key :rethink/port)     s/Num
-              (s/required-key :rethink/auth-key) s/Str
-              (s/required-key :rethink/db)       s/Str
-              (s/required-key :rethink/table)    s/Str})
+             {(s/required-key :rethinkdb/host)     s/Str
+              (s/required-key :rethinkdb/port)     s/Num
+              (s/required-key :rethinkdb/auth-key) s/Str
+              (s/required-key :rethinkdb/db)       s/Str
+              (s/required-key :rethinkdb/table)    s/Str})
 
 (s/defschema BatchSettings
              {(s/required-key :onyx/batch-size)    s/Num
               (s/required-key :onyx/batch-timeout) s/Num})
 
-(s/defschema RethinkOutputTask {:rethink/table s/Keyword
-                                :rethink/data  gs/Signal})
+(s/defschema RethinkOutputTask {:rethinkdb/table s/Keyword
+                                :rethinkdb/data  gs/Signal})
 
 (defn upsert!
       "upsert! takes a list of items [{:id \"item-1\" ...}, {:id \"item-2\" ...} ...]
@@ -48,17 +48,21 @@
 
 (defn write-to-database [event lifecycle]
       (let [db-connection (:db-connection event)
-            table (:rethink/table lifecycle)
+            table (:rethinkdb/table lifecycle)
             batch (:onyx.core/batch event)
-            signals (map #(assoc (get-in % [:message :data]) :id (get-in % [:message :id])) batch)]
-           (upsert! db-connection table signals)
+            items (map #(assoc (get-in % [:message :data]) :id (get-in % [:message :id])) batch)]
+
+           (let [items* (into [] items)] (when-not (empty? items*) (log/debug (str "RethinkDB: Write to " table ": " items*))))
+
+           (upsert! db-connection table items)
            {}))
 
 (defn connect [event lifecycle]
-      (let [host (:rethink/host lifecycle)
-            port (:rethink/port lifecycle)
-            auth-key (:rethink/auth-key lifecycle)
-            db (:rethink/db lifecycle)
+      (log/debug "connecting to RethinkDB")
+      (let [host (:rethinkdb/host lifecycle)
+            port (:rethinkdb/port lifecycle)
+            auth-key (:rethinkdb/auth-key lifecycle)
+            db (:rethinkdb/db lifecycle)
             db-connection (r/connect :host host :port port :auth-key auth-key :db db)]
            {:db-connection db-connection}))
 
@@ -73,8 +77,7 @@
 
 (s/defn output-task
         [task-name :- s/Keyword
-         rethink-config :- RethinkSettings
-         opts :- BatchSettings]
+         {:keys [task-opts lifecycle-opts] :as opts}]
         {:task   {:task-map   (merge {:onyx/name   task-name
                                       :onyx/plugin :onyx.peer.function/function
                                       ;; We don't want to transform the data, just write it.
@@ -83,11 +86,11 @@
                                       :onyx/type   :output
                                       :onyx/medium :function
                                       :onyx/doc    "Does nothing (identity) but provide a place where lifecycle functions can hook into… "}
-                                     opts
+                                     task-opts
                                      )
                   :lifecycles [(merge {:lifecycle/task  task-name
                                        :lifecycle/calls :guadalete.tasks.rethink/rethink-lifecycle}
-                                      rethink-config)
+                                      lifecycle-opts)
                                ]}
          :schema {:task-map   (merge os/TaskMap RethinkOutputTask)
                   :lifecycles [os/Lifecycle]}})

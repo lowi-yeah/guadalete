@@ -52,15 +52,18 @@
               (s/optional-key :kafka/request-size)  s/Num})
 
 (s/defn input-task
-        [task-name :- s/Keyword opts]
+        [task-name :- s/Keyword
+         {:keys [task-opts lifecycle-opts] :as opts}]
         {:task   {:task-map   (merge {:onyx/name   task-name
                                       :onyx/plugin :onyx.plugin.kafka/read-messages
                                       :onyx/type   :input
                                       :onyx/medium :kafka
                                       :onyx/doc    "Reads messages from a Kafka topic"}
-                                     opts)
-                  :lifecycles [{:lifecycle/task  task-name
-                                :lifecycle/calls :onyx.plugin.kafka/read-messages-calls}]}
+                                     task-opts)
+                  :lifecycles [(merge
+                                 {:lifecycle/task  task-name
+                                  :lifecycle/calls :onyx.plugin.kafka/read-messages-calls}
+                                 lifecycle-opts)]}
          :schema {:task-map   (merge os/TaskMap KafkaInputTask)
                   :lifecycles [os/Lifecycle]}})
 
