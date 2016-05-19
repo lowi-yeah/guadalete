@@ -1,5 +1,5 @@
 (set-env!
-  :resource-paths #{"src"}
+  :source-paths #{"src"}
   :dependencies '[[aero "0.1.5" :exclusions [prismatic/schema]]
                   [org.clojure/clojure "1.8.0"]
                   [org.clojure/core.async "0.2.374"]
@@ -19,7 +19,9 @@
                   [com.taoensso/carmine "2.12.2"]
                   [com.taoensso/timbre "4.3.1"]
                   [thi.ng/math "0.2.1"]
-                  [forecast-clojure "1.0.3"]])
+                  [forecast-clojure "1.0.3"]
+                  [net.eliosoft/artnet4j "0001"]
+                  ])
 
 (require
   '[reloaded.repl :as repl :refer [start stop go reset]]
@@ -72,6 +74,10 @@
                   {:name               "swtch-c"
                    :partitions         1
                    :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}
+                  {:name               "gdlt-artnet"
+                   :partitions         1
+                   :replication-factor 1
                    :config             {"cleanup.policy" "compact"}}]})
 
 
@@ -83,6 +89,8 @@
 (def forecast-dev-config
   {:forecast-key "6c6ff80d697e050eff942334032eaa97"})
 
+(def artnet-config
+  {:artnet/address "10.17.0.201"})
 
 (defn- dev-config
        "Merge the individual component configurations into one big map."

@@ -54,6 +54,12 @@
        :mqtt-id     (get* :mqtt/id)
        :mqtt-topics (get* :mqtt/topics)})
 
+(defn artnet []
+      {:node-port         7000
+       :poll-interval     10000
+       :broadcast-address "255.255.255.255"
+       :server-port       6454})
+
 (defn signal-configuration []
       (merge (rethinkdb) {:table "signal"}))
 

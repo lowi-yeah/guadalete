@@ -16,14 +16,12 @@
        (log/debug "stopping job" job-id)
        (onyx.api/kill-job peer-config job-id))
 
-(defrecord JobRunner [onyx kafka mqtt rethinkdb]
+(defrecord JobRunner [onyx kafka mqtt rethinkdb artnet]
            component/Lifecycle
            (start [component]
-                  (log/info "starting component: JobRunner" (count (make-jobs)))
-                  (let [
-                        peer-config (:peer-config onyx)
-                        job-ids (into [] (map (partial start-job peer-config) (make-jobs)))
-                        ]
+                  (log/info "starting component: JobRunner")
+                  (let [peer-config (:peer-config onyx)
+                        job-ids (into [] (map (partial start-job peer-config) (make-jobs onyx kafka mqtt rethinkdb artnet)))]
                        (log/debug "job-ids" job-ids)
                        (assoc component :job-ids job-ids :peer-config peer-config)))
            (stop [component]

@@ -23,3 +23,8 @@
               :value-update-interval  s/Num
               :config-update-interval s/Num
               })
+(s/defschema ArtnetUniverse {:universe       s/Str
+                             :id             s/Str
+                             :ip             s/Str
+                             :numDmxChannels s/Num
+                             :serverPort     s/Num})

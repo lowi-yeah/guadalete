@@ -52,7 +52,7 @@
             batch (:onyx.core/batch event)
             items (map #(assoc (get-in % [:message :data]) :id (get-in % [:message :id])) batch)]
 
-           (let [items* (into [] items)] (when-not (empty? items*) (log/debug (str "RethinkDB: Write to " table ": " items*))))
+           ;(let [items* (into [] items)] (when-not (empty? items*) (log/debug (str "RethinkDB: Write to " table ": " items*))))
 
            (upsert! db-connection table items)
            {}))
