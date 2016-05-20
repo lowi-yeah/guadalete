@@ -56,7 +56,12 @@
    :artnet        {:name               "gdlt-artnet"
                    :partitions         1
                    :replication-factor 1
-                   :config             {"cleanup.policy" "compact"}}})
+                   :config             {"cleanup.policy" "compact"}}
+
+   :light-value {:name               "gdlt-lght-v"
+                 :partitions         1
+                 :replication-factor 1
+                 :config             {"cleanup.policy" "compact"}}})
 
 
 
