@@ -87,7 +87,6 @@
                               (Thread/sleep 200))           ; wait for the promise to be delivered before proceeding
                             (.stop discovery)               ; stop when w found a node
                             (.stop artnet)               ; stop when w found a node
-                            (log/debug "config-promise delivered:" @config-promise)
                             (assoc component :config-bytes @config-promise))))
 
            (stop [component]

@@ -68,14 +68,16 @@
                   :lifecycles [os/Lifecycle]}})
 
 (s/defn output-task
-        [task-name :- s/Keyword opts]
+        [task-name :- s/Keyword
+         {:keys [task-opts lifecycle-opts] :as opts}]
         {:task   {:task-map   (merge {:onyx/name   task-name
                                       :onyx/plugin :onyx.plugin.kafka/write-messages
                                       :onyx/type   :output
                                       :onyx/medium :kafka
                                       :onyx/doc    "Writes messages to a Kafka topic"}
-                                     opts)
-                  :lifecycles [{:lifecycle/task  task-name
-                                :lifecycle/calls :onyx.plugin.kafka/write-messages-calls}]}
+                                     task-opts)
+                  :lifecycles [(merge {:lifecycle/task  task-name
+                                       :lifecycle/calls :onyx.plugin.kafka/write-messages-calls}
+                                      lifecycle-opts)]}
          :schema {:task-map   (merge os/TaskMap KafkaOutputTask)
                   :lifecycles [os/Lifecycle]}})

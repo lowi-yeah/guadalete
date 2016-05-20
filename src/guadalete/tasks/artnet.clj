@@ -27,23 +27,25 @@
 
 
 (defn write-to-artnet [event lifecycle]
-
-
-
-
-
       (let [artnet (:artnet event)
             sequence-id (:artnet/sequence-id event)
             universe (:artnet/universe event)
             ip-address (-> universe
                            (.getNode)
-                           (.getIPAddress))]
+                           (.getIPAddress))
+            batch (:onyx.core/batch event)]
 
-           (doseq [i (range 512)]
-                  (.setChannel universe i (rand-int 255)))
+           ;(doseq [i (range 512)] (.setChannel universe i (rand-int 255)))
+
+           (doseq [item batch]
+                  (let [dmx-channel (get-in item [:message :id])
+                        value (get-in item [:message :val])]
+                       ;(.setChannel universe dmx-channel value)
+                       (.setChannel universe 0 value)))
+
+
 
            (let [dmx-packet (.getPacket universe @sequence-id)]
-                (log/debug "sequence-id" @sequence-id)
                 ;(.unicastPacket artnet dmx-packet ip-address)
                 (.broadcastPacket artnet dmx-packet)
                 (swap! (:artnet/sequence-id event) inc)

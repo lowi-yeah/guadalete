@@ -24,8 +24,8 @@
 (defn configure-job
       [job artnet]
       (let [
-            artnet-lifecycle-opts {:artnet/config-bytes (:config-bytes artnet)
-                                   :artnet/server-port (:server-port artnet)
+            artnet-lifecycle-opts {:artnet/config-bytes      (:config-bytes artnet)
+                                   :artnet/server-port       (:server-port artnet)
                                    :artnet/broadcast-address (:broadcast-address artnet)
                                    }
             job* (-> job
@@ -39,12 +39,15 @@
 
                      (add-task (artnet-task/output-task
                                  :write-messages
-                                 {:task-opts      (merge (config/onyx-defaults) {:onyx/batch-timeout 4000})
+                                 {:task-opts      (merge (config/onyx-defaults) {:onyx/batch-timeout 200
+                                                                                 :onyx/batch-size    1})
                                   :lifecycle-opts artnet-lifecycle-opts})))]
+
+
            job*))
 
 (defn build-job [artnet]
       (log/debug "/n/n****/n building artnetn job" artnet)
-      {:name :sensor/value
+      {:name :artnet
        :job  (configure-job base-job artnet)})
 

@@ -39,7 +39,7 @@
                        ;//  /__/_\__, |_||_\__,_|_/__/
                        ;//       |___/
                        ; some signals used for development/testing
-                       :sine-signal (component/using (new-sine-signal (merge (config/mqtt) {:mqtt-id "sin3" :increment 0.01 :interval 2000})) [:kafka :mqtt :mqtt-kafkabridge])
+                       :sine-signal (component/using (new-sine-signal (merge (config/mqtt) {:mqtt-id "sin3" :increment 0.005 :interval 200})) [:kafka :mqtt :mqtt-kafkabridge])
                        ;:weather-signals (component/using (new-weather-signal (merge (config/weather-signal) {:mqtt-id "weather"})) [:kafka :mqtt :mqtt-kafkabridge])
                        ;:mock-switch (component/using (new-mock-switch (merge (config/mqtt) {:mqtt-id "mock-switch"})) [:kafka :mqtt :mqtt-kafkabridge])
 

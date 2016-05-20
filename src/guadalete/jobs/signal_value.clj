@@ -18,8 +18,14 @@
 
 
 (def base-job
-  {:workflow       [[:read-messages :transform-messages]
-                    [:transform-messages :redis-messages]]
+  {:workflow       [[:read-messages :redis-transform]
+                    [:redis-transform :redis-messages]
+
+                    ;debug: write signal values direcly into artnet
+                    [:read-messages :artnet-transform]
+                    [:artnet-transform :artnet-messages]
+
+                    ]
    :lifecycles     []
    :catalog        []
    :task-scheduler :onyx.task-scheduler/balanced})
@@ -28,8 +34,9 @@
       ;(log/debug "kafka->redis" segment)
       {:op :sadd :args ["guadalete/sgnl/raw" (json/generate-string (vals (assoc segment :t (now))))]})
 
-(def transform-task
-  {:task   {:task-map   {:onyx/name          :transform-messages
+
+(def redis-transform
+  {:task   {:task-map   {:onyx/name          :redis-transform
                          :onyx/fn            ::kafka->redis
                          :onyx/type          :function
                          :onyx/batch-size    10
@@ -40,6 +47,23 @@
             :lifecycles [os/Lifecycle]}}
   )
 
+(defn signal->artnet [segment]
+      (let [value (:data segment)]
+           {:message {:id 0 :val value}}))
+
+(def artnet-transform
+  {:task   {:task-map   {:onyx/name          :artnet-transform
+                         :onyx/fn            ::signal->artnet
+                         :onyx/type          :function
+                         :onyx/batch-size    1
+                         :onyx/batch-timeout 1000
+                         :onyx/doc           "Prepares a raw signal message for sending to artnet (via kafka)"}
+            :lifecycles []}
+   :schema {:task-map   os/TaskMap
+            :lifecycles [os/Lifecycle]}}
+  )
+
+
 (defn configure-job
       [job]
       (let [job* (-> job
@@ -48,12 +72,28 @@
                          :read-messages
                          {:task-opts      (merge
                                             (config/kafka-task)
-                                            {:kafka/topic "sgnl-v" :kafka/group-id "signal-value-consumer"})
+                                            {:kafka/topic "sgnl-v"
+                                             :kafka/group-id "signal-value-consumer"
+                                             :onyx/batch-size    1
+                                             :onyx/batch-timeout 1000})
                           :lifecycle-opts {}}))
-                     (add-task transform-task)
-                     (add-task (redis-task/writer :redis-messages (merge (config/onyx-defaults) (config/redis)))))]
+                     (add-task redis-transform)
+                     (add-task (redis-task/writer :redis-messages (merge (config/onyx-defaults) (config/redis))))
+
+                     (add-task artnet-transform)
+                     (add-task
+                       (kafka-task/output-task
+                         :artnet-messages
+                         {:task-opts      (merge
+                                            (config/kafka-task)
+                                            {:kafka/topic "gdlt-artnet"
+                                             :onyx/batch-size    1
+                                             :onyx/batch-timeout 1000}
+                                            )
+                          :lifecycle-opts {}}))
+                     )]
            job*))
 
 (defn build-job []
-      {:name :sensor/value
+      {:name :signal/value
        :job  (configure-job base-job)})

@@ -97,6 +97,7 @@
               :kafka/empty-read-back-off 50
               :kafka/commit-interval     50
               :kafka/deserializer-fn     :guadalete.tasks.kafka/deserialize-message-json
+              :kafka/serializer-fn       :guadalete.tasks.kafka/serialize-message-json
               :kafka/wrap-with-metadata? false})
       )
 
