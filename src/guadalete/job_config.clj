@@ -12,5 +12,5 @@
        (guadalete.jobs.signal-value/build-job)
        ;(guadalete.jobs.switch-config/build-job)
        ;(guadalete.jobs.signal-config/build-job)
-       (guadalete.jobs.artnet/build-job artnet)
+       ;(guadalete.jobs.artnet/build-job artnet)
        ])

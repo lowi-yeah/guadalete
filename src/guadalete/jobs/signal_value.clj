@@ -10,7 +10,7 @@
       [schema.core :as s]
       [guadalete.utils
        [job :refer [add-task add-tasks]]
-       [config :as config]
+       [config :as config :refer [kafka-topic]]
        [util :refer [now]]]
       [guadalete.tasks
        [core-async :as core-async-task]
@@ -20,20 +20,22 @@
 (def base-job
   {:workflow       [[:read-messages :redis-transform]
                     [:redis-transform :redis-messages]
-
                     ;debug: write signal values direcly into artnet
-                    [:read-messages :artnet-transform]
-                    [:artnet-transform :artnet-messages]
-
+                    ;[:read-messages :artnet-transform]
+                    ;[:artnet-transform :artnet-messages]
                     ]
    :lifecycles     []
    :catalog        []
    :task-scheduler :onyx.task-scheduler/balanced})
 
 (defn kafka->redis [segment]
-      ;(log/debug "kafka->redis" segment)
-      {:op :sadd :args ["guadalete/sgnl/raw" (json/generate-string (vals (assoc segment :t (now))))]})
-
+      ;{:id "sin3", :data 0}
+      (let [id (:id segment)
+            value (:data segment)
+            time (now)
+            message [id value time]]
+           ;(log/debug "kafka->redis" (json/generate-string message))
+           {:op :sadd :args ["guadalete/sgnl/raw" (json/generate-string message)]}))
 
 (def redis-transform
   {:task   {:task-map   {:onyx/name          :redis-transform
@@ -72,25 +74,25 @@
                          :read-messages
                          {:task-opts      (merge
                                             (config/kafka-task)
-                                            {:kafka/topic "sgnl-v"
-                                             :kafka/group-id "signal-value-consumer"
+                                            {:kafka/topic        (kafka-topic :signal-value)
+                                             :kafka/group-id     "signal-value-consumer"
                                              :onyx/batch-size    1
                                              :onyx/batch-timeout 1000})
                           :lifecycle-opts {}}))
                      (add-task redis-transform)
                      (add-task (redis-task/writer :redis-messages (merge (config/onyx-defaults) (config/redis))))
 
-                     (add-task artnet-transform)
-                     (add-task
-                       (kafka-task/output-task
-                         :artnet-messages
-                         {:task-opts      (merge
-                                            (config/kafka-task)
-                                            {:kafka/topic "gdlt-artnet"
-                                             :onyx/batch-size    1
-                                             :onyx/batch-timeout 1000}
-                                            )
-                          :lifecycle-opts {}}))
+                     ;(add-task artnet-transform)
+                     ;(add-task
+                     ;  (kafka-task/output-task
+                     ;    :artnet-messages
+                     ;    {:task-opts      (merge
+                     ;                       (config/kafka-task)
+                     ;                       {:kafka/topic (kafka-topic :artnet)
+                     ;                        :onyx/batch-size    1
+                     ;                        :onyx/batch-timeout 1000}
+                     ;                       )
+                     ;     :lifecycle-opts {}}))
                      )]
            job*))
 

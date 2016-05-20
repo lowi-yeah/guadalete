@@ -34,9 +34,39 @@
 (defn onyx-defaults []
       (merge (onyx-peer) (onyx-batch)))
 
+(def kafka-prefix "gdlt-")
+
+(def kafka-topics
+  {:signal-value  {:name               "gdlt-sgnl-v"
+                   :partitions         1
+                   :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}
+   :signal-config {:name               "gdlt-sgnl-c"
+                   :partitions         1
+                   :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}
+   :switch-value  {:name               "gdlt-swtch-v"
+                   :partitions         1
+                   :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}
+   :switch-config {:name               "gdlt-swtch-c"
+                   :partitions         1
+                   :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}
+   :artnet        {:name               "gdlt-artnet"
+                   :partitions         1
+                   :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}})
+
+
+
+(defn kafka-topic [topic]
+      (get-in kafka-topics [topic :name]))
+
 (defn kafka []
       {:zookeeper-address (get* :zookeeper/address)
-       :kafka-topics      (get* :kafka/topics)})
+       :kafka-topics      (vals kafka-topics)})
+
 
 (defn rethinkdb []
       {:host     (get* :rethinkdb/host)

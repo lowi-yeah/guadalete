@@ -14,12 +14,13 @@
       [clojurewerkz.machine-head.client :as mh]
       [clj-kafka.new.producer :refer [producer send record string-serializer byte-array-serializer]]
       [taoensso.timbre :as log]
+      [guadalete.utils.config :refer [kafka-prefix]]
       ))
 
 (defn- mqtt->kafka [mqtt-topic mqtt-payload]
        (let [[signal-type message-type id] (str/split mqtt-topic #"/")
              message* (parse-string (String. mqtt-payload "UTF-8") true)
-             kafka-topic (str signal-type "-" message-type)]
+             kafka-topic (str kafka-prefix signal-type "-" message-type)]
             {:topic   kafka-topic
              :message {:id id :data message*}}))
 

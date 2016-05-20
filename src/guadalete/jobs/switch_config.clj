@@ -4,7 +4,7 @@
       [taoensso.timbre :as log]
       [guadalete.utils
        [job :refer [add-task add-tasks]]
-       [config :as config]]
+       [config :as config :refer [kafka-topic]]]
       [guadalete.tasks
        [core-async :as core-async-task]
        [kafka :as kafka-task]
@@ -28,7 +28,8 @@
                          :read-switch-config
                          {:task-opts      (merge
                                             (config/kafka-task)
-                                            {:kafka/topic "swtch-c" :kafka/group-id "switch-config-consumer"})
+                                            {:kafka/topic    (kafka-topic :switch-config)
+                                             :kafka/group-id "switch-config-consumer"})
                           :lifecycle-opts {}}))
 
                      (add-task

@@ -4,7 +4,7 @@
       [taoensso.timbre :as log]
       [guadalete.utils
        [job :refer [add-task add-tasks]]
-       [config :as config]]
+       [config :as config :refer [kafka-topic]]]
       [guadalete.tasks
        [core-async :as core-async-task]
        [kafka :as kafka-task]
@@ -27,7 +27,7 @@
               :read-signal-config
               {:task-opts      (merge
                                  (config/kafka-task)
-                                 {:kafka/topic "sgnl-c" :kafka/group-id "signal-config-consumer"})
+                                 {:kafka/topic (kafka-topic :signal-config) :kafka/group-id "signal-config-consumer"})
                :lifecycle-opts {}}
               ))
           (add-task

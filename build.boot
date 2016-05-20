@@ -58,27 +58,6 @@
   {:redis/uri             "redis://redis1:6379"
    :redis/read-timeout-ms 1000})
 
-(def kafka-dev-config
-  {:kafka/topics [{:name               "sgnl-v"
-                   :partitions         1
-                   :replication-factor 1
-                   :config             {"cleanup.policy" "compact"}}
-                  {:name               "sgnl-c"
-                   :partitions         1
-                   :replication-factor 1
-                   :config             {"cleanup.policy" "compact"}}
-                  {:name               "swtch-v"
-                   :partitions         1
-                   :replication-factor 1
-                   :config             {"cleanup.policy" "compact"}}
-                  {:name               "swtch-c"
-                   :partitions         1
-                   :replication-factor 1
-                   :config             {"cleanup.policy" "compact"}}
-                  {:name               "gdlt-artnet"
-                   :partitions         1
-                   :replication-factor 1
-                   :config             {"cleanup.policy" "compact"}}]})
 
 
 (def mqtt-dev-config
@@ -97,7 +76,6 @@
        []
        (merge zk-dev-config
               onyx-dev-config
-              kafka-dev-config
               mqtt-dev-config
               rethinkdb-dev-config
               forecast-dev-config

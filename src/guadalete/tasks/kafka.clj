@@ -5,7 +5,6 @@
       [onyx.schema :as os]
       [taoensso.timbre :as log]))
 
-
 (defn deserialize-message-string [bytes]
       (try
         (String. bytes "UTF-8")
@@ -54,6 +53,9 @@
 (s/defn input-task
         [task-name :- s/Keyword
          {:keys [task-opts lifecycle-opts] :as opts}]
+
+        (log/debug "input- kafka task options" task-opts)
+
         {:task   {:task-map   (merge {:onyx/name   task-name
                                       :onyx/plugin :onyx.plugin.kafka/read-messages
                                       :onyx/type   :input
@@ -70,6 +72,9 @@
 (s/defn output-task
         [task-name :- s/Keyword
          {:keys [task-opts lifecycle-opts] :as opts}]
+
+        (log/debug "output- kafka task options" task-opts)
+
         {:task   {:task-map   (merge {:onyx/name   task-name
                                       :onyx/plugin :onyx.plugin.kafka/write-messages
                                       :onyx/type   :output

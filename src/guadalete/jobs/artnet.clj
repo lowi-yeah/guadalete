@@ -8,7 +8,7 @@
       [schema.core :as s]
       [guadalete.utils
        [job :refer [add-task add-tasks]]
-       [config :as config]
+       [config :as config :refer [kafka-topic]]
        [util :refer [now]]]
       [guadalete.tasks
        [artnet :as artnet-task]
@@ -34,7 +34,7 @@
                          :read-messages
                          {:task-opts      (merge
                                             (config/kafka-task)
-                                            {:kafka/topic "gdlt-artnet" :kafka/group-id "artnet-consumer"})
+                                            {:kafka/topic (kafka-topic :artnet) :kafka/group-id "artnet-consumer"})
                           :lifecycle-opts {}}))
 
                      (add-task (artnet-task/output-task
