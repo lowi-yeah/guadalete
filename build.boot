@@ -59,7 +59,6 @@
    :redis/read-timeout-ms 1000})
 
 
-
 (def mqtt-dev-config
   {:mqtt/broker "tcp://mosquitto1:1883"
    :mqtt/id     "guadalete-client"

@@ -15,7 +15,7 @@
                 flow-conditions (update :flow-conditions into (:flow-conditions task))))
 
 (defn add-tasks
-      "Same thing as add-task, but works with sequences of tasks"
+      "Same thing as add-task, but accepts a collection of tasks"
       ([job tasks]
         (reduce
           (fn [job task]

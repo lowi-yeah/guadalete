@@ -6,7 +6,6 @@
       [clojure.core.async :refer [chan sliding-buffer >!!]]
       [onyx.plugin.core-async :refer [take-segments!]]))
 
-
 (def input-channel-capacity 10000)
 
 (def output-channel-capacity (inc input-channel-capacity))

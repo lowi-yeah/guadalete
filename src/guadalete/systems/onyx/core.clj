@@ -12,9 +12,7 @@
       [onyx.plugin.core-async]
       [onyx.api]
       [taoensso.timbre :as log]
-      [guadalete.utils.config :as config]
-
-      ))
+      [guadalete.utils.config :as config]))
 
 (defn- log-progress [msg data]
        (log/debug "**** **** ****" msg data))
