@@ -46,8 +46,7 @@
                          :onyx/doc           "Prepares a raw signal message for logging to redis"}
             :lifecycles []}
    :schema {:task-map   os/TaskMap
-            :lifecycles [os/Lifecycle]}}
-  )
+            :lifecycles [os/Lifecycle]}})
 
 (defn signal->artnet [segment]
       (let [value (:data segment)]
@@ -62,8 +61,7 @@
                          :onyx/doc           "Prepares a raw signal message for sending to artnet (via kafka)"}
             :lifecycles []}
    :schema {:task-map   os/TaskMap
-            :lifecycles [os/Lifecycle]}}
-  )
+            :lifecycles [os/Lifecycle]}})
 
 
 (defn configure-job
