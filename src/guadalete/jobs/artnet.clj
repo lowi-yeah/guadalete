@@ -8,11 +8,17 @@
       [schema.core :as s]
       [guadalete.utils
        [job :refer [add-task add-tasks]]
-       [config :as config :refer [kafka-topic]]
        [util :refer [now]]]
+
+      [guadalete.config
+       [task :as config]
+       [onyx :refer [onyx-defaults]]
+       [kafka :refer [kafka-topic]]
+       ]
+
       [guadalete.tasks
-       [artnet :as artnet-task]
-       [kafka :as kafka-task]]))
+       [artnet :as artnet]
+       [kafka :as kafka]]))
 
 
 (def base-job
@@ -22,24 +28,24 @@
    :task-scheduler :onyx.task-scheduler/balanced})
 
 (defn configure-job
-      [job artnet]
+      [job artnet*]
       (let [
-            artnet-lifecycle-opts {:artnet/config-bytes      (:config-bytes artnet)
-                                   :artnet/server-port       (:server-port artnet)
-                                   :artnet/broadcast-address (:broadcast-address artnet)
+            artnet-lifecycle-opts {:artnet/config-bytes      (:config-bytes artnet*)
+                                   :artnet/server-port       (:server-port artnet*)
+                                   :artnet/broadcast-address (:broadcast-address artnet*)
                                    }
             job* (-> job
                      (add-task
-                       (kafka-task/input-task
+                       (kafka/input-task
                          :read-messages
                          {:task-opts      (merge
-                                            (config/kafka-task)
+                                            (config/kafka)
                                             {:kafka/topic (kafka-topic :artnet) :kafka/group-id "artnet-consumer"})
                           :lifecycle-opts {}}))
 
-                     (add-task (artnet-task/output-task
+                     (add-task (artnet/output-task
                                  :write-messages
-                                 {:task-opts      (merge (config/onyx-defaults) {:onyx/batch-timeout 200
+                                 {:task-opts      (merge (onyx-defaults) {:onyx/batch-timeout 200
                                                                                  :onyx/batch-size    1})
                                   :lifecycle-opts artnet-lifecycle-opts})))]
 

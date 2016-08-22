@@ -1,6 +1,7 @@
 (ns guadalete.schema.core
     (:require [schema.utils :as utils]
       [schema.core :as s]
+      [onyx.schema :as os]
       ;[schema.macros :as macros]
       ))
 
@@ -28,3 +29,95 @@
                              :ip             s/Str
                              :numDmxChannels s/Num
                              :serverPort     s/Num})
+
+(s/defschema Vec2
+             {:x s/Num
+              :y s/Num})
+
+
+;//     _     _
+;//    (_)___| |__
+;//    | / _ \ '_ \
+;//   _/ \___/_.__/
+;//  |__/
+(s/defschema JobMap
+             {s/Str os/Job})
+
+
+;//    __ _
+;//   / _| |_____ __ __
+;//  |  _| / _ \ V  V /
+;//  |_| |_\___/\_/\_/
+;//
+
+(s/defschema Item s/Any)
+
+;(s/defschema Link
+;             {:id       s/Str
+;              :scene-id s/Str
+;              :node-id  s/Str
+;              :item     Item})
+
+(s/defschema Flow
+             {:from Item
+              :to   Item
+              :id   s/Str})
+
+(s/defschema FlowMap
+             {s/Keyword [Flow]})
+
+
+;//                      _
+;//   __ _ _ _ __ _ _ __| |_
+;//  / _` | '_/ _` | '_ \ ' \
+;//  \__, |_| \__,_| .__/_||_|
+;//  |___/         |_|
+
+
+;//   _ _ _ _ _ _ _ _
+;//  (_)_)_)_)_)_)_)_)
+
+(s/defschema Link
+             {:id                    s/Str
+              :index                 s/Num
+              :direction             (s/enum "out" "in")
+              :ilk                   (s/enum "value" "color")
+              (s/optional-key :type) s/Str
+              (s/optional-key :name) s/Str
+              })
+
+(s/defschema Node
+             {:id       s/Str
+              :item-id  s/Str
+              :ilk      s/Str
+              :links    {s/Keyword Link}
+              ;:links    s/Any
+              :position Vec2
+              })
+
+(s/defschema LinkReference
+             {:id       s/Str
+              :node-id  s/Str
+              :scene-id s/Str})
+
+(s/defschema FlowReference
+             {:id   s/Str
+              :from LinkReference
+              :to   LinkReference})
+
+(s/defschema Scene
+             {:flows       {s/Keyword FlowReference}
+              :id          s/Str
+              :mode        (s/eq "none")
+              :name        s/Str
+              :nodes       {s/Keyword Node}
+              ;:nodes       {s/Keyword s/Any}
+              :on?         s/Bool
+              :room-id     s/Str
+              :translation Vec2
+              })
+
+(s/defschema Room s/Any)
+(s/defschema Light s/Any)
+(s/defschema Signal s/Any)
+

@@ -2,7 +2,8 @@
   boot-project
   "0.0.0-SNAPSHOT"
   :dependencies
-  [[aero "0.1.5" :exclusions [prismatic/schema]]
+  [[lein-light-nrepl "0.3.3"]
+   [aero "0.1.5" :exclusions [prismatic/schema]]
    [org.clojure/clojure "1.8.0"]
    [org.clojure/core.async "0.2.374"]
    [org.danielsz/system "0.2.0"]
@@ -16,11 +17,19 @@
    [org.onyxplatform/onyx "0.9.4"]
    [org.onyxplatform/onyx-kafka "0.9.4.0"]
    [org.onyxplatform/onyx-redis "0.9.0.1"]
-   [org.onyxplatform/lib-onyx "0.8.12.0-SNAPSHOT"]
+   [org.onyxplatform/lib-onyx "0.8.12.0-20160314.202620-2"]
    [com.taoensso/encore "2.52.1"]
    [com.taoensso/carmine "2.12.2"]
    [com.taoensso/timbre "4.3.1"]
    [thi.ng/math "0.2.1"]
-   [forecast-clojure "1.0.3"]]
+   [ubergraph "0.2.3"]
+   [forecast-clojure "1.0.3"]
+   [net.eliosoft/artnet4j "0001"]
+   [overtone/osc-clj "0.9.0"]
+   [overtone/midi-clj "0.5.0"]
+   [danlentz/clj-uuid "0.1.6"]
+   [javax.jmdns/jmdns "3.4.1"]
+   [commons-net "3.0.1"]
+   [overtone/at-at "1.1.1"]]
   :source-paths
-  ["src" "lib/artnet4j-0001.jar"])
+  ["src"])

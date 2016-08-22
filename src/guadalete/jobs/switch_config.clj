@@ -1,16 +1,19 @@
 (ns guadalete.jobs.switch-config
     (:require
+      [onyx.api]
       [onyx.plugin.kafka]
       [taoensso.timbre :as log]
       [guadalete.utils
-       [job :refer [add-task add-tasks]]
-       [config :as config :refer [kafka-topic]]]
+       [job :refer [add-task add-tasks]]]
+      [guadalete.config
+       [task :as config]
+       [onyx :refer (onyx-defaults)]
+       [kafka :refer [kafka-topic]]
+       ]
       [guadalete.tasks
        [core-async :as core-async-task]
-       [kafka :as kafka-task]
-       [rethink :as rethink-task]
-       ]
-      [onyx.api]))
+       [kafka :as kafka]
+       [rethink :as rethink]]))
 
 
 (defn build-base-job
@@ -24,19 +27,19 @@
       [job _opts]
       (let [job* (-> job
                      (add-task
-                       (kafka-task/input-task
+                       (kafka/input-task
                          :read-switch-config
                          {:task-opts      (merge
-                                            (config/kafka-task)
+                                            (config/kafka)
                                             {:kafka/topic    (kafka-topic :switch-config)
                                              :kafka/group-id "switch-config-consumer"})
                           :lifecycle-opts {}}))
 
                      (add-task
-                       (rethink-task/output-task
+                       (rethink/output-task
                          :save-switch-config
-                         {:task-opts      (config/onyx-defaults)
-                          :lifecycle-opts (merge (config/rethink-task) {:rethinkdb/table "switch"})}))
+                         {:task-opts      (onyx-defaults)
+                          :lifecycle-opts (merge (config/rethink) {:rethinkdb/table "switch"})}))
 
                      ;(add-task (core-async-task/output-task :write-signal-config {:onyx/batch-size batch-size}))
                      )]

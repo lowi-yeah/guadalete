@@ -8,8 +8,10 @@
       [schema.core :as s]
       [guadalete.utils
        [job :refer [add-task add-tasks]]
-       [config :as config :refer [kafka-topic]]
        [util :refer [now]]]
+      [guadalete.config
+       [task :as taks-config]
+       [kafka :refer [kafka-topic]]]
       [guadalete.tasks
        [kafka :as kafka-task]]))
 
@@ -38,7 +40,7 @@
 (def transform
   {:task   {:task-map   {:onyx/name          :dmx-light/transform
                          :onyx/fn            ::hsb->dmx
-                         :onyx/type          :function
+                         :onyx/type          :output
                          :onyx/batch-size    1
                          :onyx/batch-timeout 1000
                          :onyx/doc           "Prepares a raw signal message for sending to artnet (via kafka)"}
@@ -54,7 +56,7 @@
                        (kafka-task/input-task
                          :read-messages
                          {:task-opts      (merge
-                                            (config/kafka-task)
+                                            (taks-config/kafka)
                                             {:kafka/topic        (kafka-topic :light-value)
                                              :kafka/group-id     "light-value-consumer"
                                              :onyx/batch-size    1
@@ -66,7 +68,7 @@
                        (kafka-task/output-task
                          :write-messages
                          {:task-opts      (merge
-                                            (config/kafka-task)
+                                            (taks-config/kafka)
                                             {:kafka/topic        (kafka-topic :artnet)
                                              :onyx/batch-size    1
                                              :onyx/batch-timeout 1000}

@@ -5,19 +5,20 @@
       [clojure.core.async :refer [go go-loop <! >! >!! chan timeout alts!]]
       [clojurewerkz.machine-head.client :as mh]
       [thi.ng.math.core :as m]
-      [cheshire.core :as js0n]
+      [cheshire.core :refer [generate-string]]
       [guadalete.signals.util :refer [value-topic config-topic]]))
 
 
 (def value-atom (atom 0))
 (def config-interval 10000)
-(def config-map
-  {:description "a 4.40Hz sine signal"
-   :type "analog"
-   :name "A-Major/centi"})
+
+;(def config-map
+;  {:desc "a 4.40Hz sine signal"
+;   :type "analog"
+;   :name "A-Major/centi"})
 
 (defn- map* [x]
-       (int (m/map-interval x -1.0 1.0 0.0 255.0)))
+       (m/map-interval x -1.0 1.0 0.0 1.0))
 
 (defn- send-value [conn id increment]
        (let [value-msg (str (map* (Math/sin @value-atom)))]
@@ -27,7 +28,7 @@
             (swap! value-atom #(+ increment %))))
 
 (defn- send-config [conn id]
-       (mh/publish conn (config-topic id) (js0n/generate-string config-map)))
+       (mh/publish conn (config-topic id) (generate-string {:name id :type "analog"})))
 
 (defn- run
        [f time-in-ms]
@@ -55,8 +56,6 @@
                         value-stop-ch (run-value conn mqtt-id increment interval)
                         config-stop-ch (run-config conn mqtt-id)]
                        (log/info (str "MQTT (" mqtt-id "@" mqtt-broker ")"))
-                       (log/debug "value-stop-ch" value-stop-ch)
-                       (log/debug "config-stop-ch" config-stop-ch)
                        (assoc component :conn conn :value value-stop-ch :configuration config-stop-ch)))
            (stop [component]
                  (let [conn (:conn component)

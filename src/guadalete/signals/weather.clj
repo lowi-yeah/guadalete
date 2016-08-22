@@ -20,7 +20,7 @@
               weather mock/weather]
              (try
                (doseq [p parameters]
-                      (let [topic (value-topic (str id "-" p))
+                      (let [topic (value-topic p)
                             value (get-in weather [:currently (keyword p)])]
                            (mh/publish conn topic (str value))))
                (catch Exception e (str "caught exception: " (.getMessage e))))))
@@ -31,8 +31,9 @@
 
 (defn- send-config [conn id parameters config-map]
        (doseq [p parameters]
-              (let [topic (config-topic (str id "-" p))
-                    config-map* (merge config-map {:name (str p) :description (str "The current " p " at la Donaira")})]
+              (let [topic (config-topic p)
+                    ;config-map* (merge config-map {:name (str p) :description (str "The current " p " at la Donaira")})]
+                    config-map* (merge config-map {:name (str p) :type "analog"})]
                    (mh/publish conn topic (json/generate-string config-map*)))))
 
 (defn- run-config [conn id parameters config-map update-interval]

@@ -1,6 +1,7 @@
 (set-env!
   :source-paths #{"src"}
-  :dependencies '[[aero "0.1.5" :exclusions [prismatic/schema]]
+  :dependencies '[[lein-light-nrepl "0.3.3"]
+                  [aero "0.1.5" :exclusions [prismatic/schema]]
                   [org.clojure/clojure "1.8.0"]
                   [org.clojure/core.async "0.2.374"]
                   [org.danielsz/system "0.2.0"]
@@ -11,18 +12,25 @@
                   [clojurewerkz/machine_head "1.0.0-beta9"]
                   [com.apa512/rethinkdb "0.15.19"]
                   [org.clojure/tools.nrepl "0.2.12"]
-                  [org.onyxplatform/onyx "0.9.4"]
-                  [org.onyxplatform/onyx-kafka "0.9.4.0"]
+                  [org.onyxplatform/onyx "0.9.9"]
+                  [org.onyxplatform/onyx-kafka-0.8 "0.9.9.1-SNAPSHOT"]
+                  ;[org.onyxplatform/onyx-kafka "0.9.4.0"]
                   [org.onyxplatform/onyx-redis "0.9.0.1"]
-                  [org.onyxplatform/lib-onyx "0.8.12.0-SNAPSHOT"]
+                  [org.onyxplatform/lib-onyx "0.9.7.1"]
                   [com.taoensso/encore "2.52.1"]
                   [com.taoensso/carmine "2.12.2"]
                   [com.taoensso/timbre "4.3.1"]
                   [thi.ng/math "0.2.1"]
+                  [ubergraph "0.2.3"]
                   [forecast-clojure "1.0.3"]
                   [net.eliosoft/artnet4j "0001"]
+                  [overtone/osc-clj "0.9.0"]
+                  [overtone/midi-clj "0.5.0"]
+                  [danlentz/clj-uuid "0.1.6"]
+                  [javax.jmdns/jmdns "3.4.1"]
+                  [commons-net "3.0.1"]
+                  [overtone/at-at "1.1.1"]
                   ])
-
 (require
   '[reloaded.repl :as repl :refer [start stop go reset]]
   '[guadalete.systems.core :refer [dev-system]]
@@ -33,6 +41,19 @@
   {:zookeeper/address     "zookeeper1:2181"
    :zookeeper/server?     "false"
    :zookeeper.server/port 2181})
+
+(def kafka-consumer-dev-config
+  {:kafka-consumer/config
+   {"zookeeper.connect"           "zookeeper1:2181"
+    "group.id"                    "guadalete-ui.consumer"
+    "auto.offset.reset"           "smallest"
+    ;"offsets.storage"             "kafka"
+    ;"auto.commit.interval.ms"     "100"
+    ;"auto.commit.enable"          "true"
+    ;"fetch.min.bytes"             "1"
+    ;"socket.timeout.ms"           "1000"
+    ;"socket.receive.buffer.bytes" "1024"
+    }})
 
 (def onyx-dev-config
   {:onyx.peer/n-peers                     8
@@ -56,7 +77,7 @@
 
 (def redis-dev-config
   {:redis/uri             "redis://redis1:6379"
-   :redis/read-timeout-ms 1000})
+   :redis/read-timeout-ms 8000})
 
 
 (def mqtt-dev-config
@@ -70,6 +91,14 @@
 (def artnet-config
   {:artnet/address "10.17.0.201"})
 
+(def osc-dev-config
+  {:osc/port 12101})
+
+(def midi-dev-config
+  {:midi/port 6257})
+
+
+
 (defn- dev-config
        "Merge the individual component configurations into one big map."
        []
@@ -78,7 +107,10 @@
               mqtt-dev-config
               rethinkdb-dev-config
               forecast-dev-config
-              redis-dev-config))
+              redis-dev-config
+              osc-dev-config
+              midi-dev-config
+              kafka-consumer-dev-config))
 
 (deftask dev
          "Run a restartable system in the r3pl."

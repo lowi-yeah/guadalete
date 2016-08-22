@@ -16,6 +16,11 @@
       [coll elm]
       (some #(= elm %) coll))
 
+(defn uuid [] (str (java.util.UUID/randomUUID)))
+
+(defn kw* [something]
+      (keyword something))
+
 (defn mappify
       "Generic convenience function for converting a collection into a map."
       [map-key collection]
