@@ -21,10 +21,9 @@
            component/Lifecycle
            (start [component]
                   (log/info "\n\n**************** Starting Onyx ****************\n")
-                  (log/info "java version: " (System/getProperty "java.runtime.version"))
-                  (log/info "n-peers: " n-peers)
-                  (log/info "peer-config: " peer-config)
-
+                  ;(log/info "java version: " (System/getProperty "java.runtime.version"))
+                  ;(log/info "n-peers: " n-peers)
+                  ;(log/info "peer-config: " peer-config)
                   (let [
                         onyx-id (java.util.UUID/randomUUID)
                         peer-config* (assoc peer-config :onyx/tenancy-id onyx-id)
@@ -35,13 +34,14 @@
                               :peer-group peer-group
                               :peers peers
                               :peer-config peer-config*
-                              :onyx-id onyx-id)))
+                              :onyx-id onyx-id))
+
+                  )
            (stop [component]
                  (log/info "Stopping Onyx")
                  (doseq [v-peer (:peers component)]
                         (onyx.api/shutdown-peer v-peer))
                  (onyx.api/shutdown-peer-group (:peer-group component))
-                 ;(onyx.api/shutdown-env (:env component))
                  (assoc component
                         :peer-group nil
                         :peer-config nil

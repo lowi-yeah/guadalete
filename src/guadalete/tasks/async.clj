@@ -9,15 +9,11 @@
       [onyx.api]
       [onyx.plugin.core-async]
       [guadalete.schema.core :as gs]
-      [guadalete.jobs.state :as state]
-      ))
+      [guadalete.jobs.state :as state]))
 
-(def out-chan (chan))
 
 (defn inject-out-ch [event lifecycle]
-      (log/debug "inject-out-ch | lifecycle" lifecycle)
-      {:core.async/chan out-chan})
-
+      {:core.async/chan (state/out-channel (:id lifecycle))})
 (def out-calls
   {:lifecycle/before-task-start inject-out-ch})
 

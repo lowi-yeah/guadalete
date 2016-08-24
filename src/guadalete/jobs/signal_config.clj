@@ -18,10 +18,7 @@
 
 (defn build-base-job
       [_opts]
-      {:workflow       [
-                        [:read-signal-config :save-signal-config]
-                        ;[:log-signal-config :save-signal-config]
-                        ]
+      {:workflow       [[:read-signal-config :save-signal-config]]
        :lifecycles     []
        :catalog        []
        :task-scheduler :onyx.task-scheduler/balanced})

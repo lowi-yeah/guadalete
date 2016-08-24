@@ -73,7 +73,13 @@
 ;//  \__, |_| \__,_| .__/_||_|
 ;//  |___/         |_|
 
-
+;(s/defschema GraphSchema
+;             {:node-map s/Any
+;              :allow-parallel? s/Bool
+;              :undirected? s/Bool
+;              :attrs s/Any
+;              :cached-hash s/Any
+;              })
 ;//   _ _ _ _ _ _ _ _
 ;//  (_)_)_)_)_)_)_)_)
 
@@ -116,7 +122,6 @@
               :room-id     s/Str
               :translation Vec2
               })
-
 (s/defschema Room s/Any)
 (s/defschema Light s/Any)
 (s/defschema Signal s/Any)

@@ -56,7 +56,7 @@
     }})
 
 (def onyx-dev-config
-  {:onyx.peer/n-peers                     8
+  {:onyx.peer/n-peers                     16
    ;:onyx.peer/job-scheduler               :onyx.job-scheduler/greedy
    ;:onyx.peer/job-scheduler               :onyx.job-scheduler/round-robin
    :onyx.peer/job-scheduler               :onyx.job-scheduler/balanced
@@ -127,6 +127,7 @@
          []
          (comp
            (environ :env {})
+           (system :sys #'dev-system :auto true :files ["onyx.clj"])
            (run :main-namespace "guadalete.core" :arguments [#'dev-system])
            (wait)))
 

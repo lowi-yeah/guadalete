@@ -46,15 +46,14 @@
        :kafka-topics      (vals topics)})
 
 (defn consumer []
-      {:config {"zookeeper.connect"           "zookeeper1:2181"
-                "group.id"                    "guadalete-ui.consumer"
-                "auto.offset.reset"           "smallest"
-                "auto.commit.enable"          "true"
-                ;"offsets.storage"             "kafka"
-                "auto.commit.interval.ms"     "100"
-                "fetch.min.bytes"             "1"
-                ;"socket.timeout.ms"           "1000"
-                ;"socket.receive.buffer.bytes" "1024"
-                "socket.receive.buffer.bytes" "128"
-                }
-       :topikz (into [] (map #(:name %) (vals topics)))})
+      {"zookeeper.connect"           (env/get-value :zookeeper/address)
+       "group.id"                    "signal-value.consumer"
+       "auto.offset.reset"           "largest"
+       "auto.commit.enable"          "true"
+       "offsets.storage"             "kafka"
+       "auto.commit.interval.ms"     "1000"
+       ;"fetch.min.bytes"             "1"
+       ;"socket.timeout.ms"           "1000"
+       ;"socket.receive.buffer.bytes" "1024"
+       ;"socket.receive.buffer.bytes" "128"
+       })

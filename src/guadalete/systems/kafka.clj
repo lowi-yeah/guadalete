@@ -6,7 +6,7 @@
 
 ;// bootstrap kafka.
 
-(ns guadalete.systems.kafka.core
+(ns guadalete.systems.kafka
     (:require
       [com.stuartsierra.component :as component]
       [clj-kafka.admin :as admin]
@@ -22,7 +22,6 @@
                   (doseq [topic topics]
                          (if-not (admin/topic-exists? zk (:name topic))
                                  (do
-                                   (log/debug (str "*****    creating topic: " (:name topic)))
                                    (admin/create-topic zk (:name topic)
                                                        {:partitions         (:partitions topic)
                                                         :replication-factor (:replication-factor topic)
@@ -32,13 +31,12 @@
            component/Lifecycle
            (start [component]
                   (log/info "**************** Starting Kafka component ***************")
-                  ;(log/debug "***** zookeeper-address" zookeeper-address)
-                  ;(log/debug "***** kafka-topics" kafka-topics)
+                  (log/debug "***** zookeeper-address" zookeeper-address)
+                  (log/debug "***** kafka-topics" kafka-topics)
                   (bootstrap-topics zookeeper-address kafka-topics)
                   (let [brokers (->> {"zookeeper.connect" zookeeper-address}
                                      (brokers)
                                      (broker-list))]
-                       ;(log/debug "***** brokers" brokers)
                        (assoc component :brokers brokers)))
 
            (stop [component]

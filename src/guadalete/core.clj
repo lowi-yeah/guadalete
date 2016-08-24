@@ -10,5 +10,5 @@
       "Start a production system."
       [& args]
       (let [system (or (first args) #'prod-system)]
-           (init system)
+           (init)
            (start)))

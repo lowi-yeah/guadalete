@@ -21,7 +21,6 @@
            component/Lifecycle
            (start [component]
                   (log/info "starting component: JobRunner")
-
                   (state/reset)
 
                   (let [

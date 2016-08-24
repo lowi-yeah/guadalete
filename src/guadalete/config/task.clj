@@ -27,7 +27,7 @@
        :rethinkdb/db       (env/get-value :rethinkdb/db)
        :rethinkdb/tables   (env/get-value :rethinkdb/tables)})
 
-
 (defn redis []
       {:redis/uri             (env/get-value :redis/uri)
-       :redis/read-timeout-ms (env/get-value :redis/read-timeout-ms)})
+       :redis/read-timeout-ms (env/get-value :redis/read-timeout-ms)
+       :redis/prefix          "sgnl"})

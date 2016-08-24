@@ -9,10 +9,13 @@
       [guadalete.utils.util :refer [pretty]]
       [guadalete.jobs
        [switch-config]
-       [signal-config]
-       [signal-value]
-       [signal-value-reader]
-       [artnet]]))
+       [signal-config :as signal-config]
+       [signal-value :as signal-value]
+       [artnet]]
+
+      [guadalete.jobs.dev
+       [signal-value-reader :as signal-value-reader]]
+      ))
 
 
 (defn make-jobs
@@ -23,18 +26,14 @@
       (with-open
         [db-conn (db/connect! rethinkdb)]
         (let [
-              ;flows (db/all-flows db-conn)
-              ;flow-jobs (jobs/from-flows flows)
-
-              debug-channel (chan)
-              signal-value (guadalete.jobs.signal-value/build-job)
-              signal-value-reader (guadalete.jobs.signal-value-reader/build-job)
-              ]
-             [
-              signal-value
-              signal-value-reader
-              ;(guadalete.jobs.signal-config/build-job)
-              ;(guadalete.jobs.switch-config/build-job)
-              ;(guadalete.jobs.artnet/build-job artnet)
-              ]
+              flows (db/all-flows db-conn)
+              flow-jobs (jobs/from-flows flows)
+              signal-value (signal-value/build-job)
+              signal-config (signal-config/build-job)
+              ;all-jobs (conj flow-jobs signal-value signal-config)]
+              all-jobs (conj () signal-value signal-config)]
+             (log/debug "all-jobs" all-jobs)
+             all-jobs
+             ;(log/debug "flow-jobs" flow-jobs)
+             ;flow-jobs
              )))

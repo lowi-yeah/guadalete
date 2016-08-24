@@ -9,12 +9,14 @@
        [core-async :as core-async-task]
        [redis :as redis-task]
        [kafka :as kafka-task]
-       [signal :as signal-task]]
+       [signal :as signal-task]
+       [items :as item-tasks]]
+
       [schema.core :as s]
       [onyx.schema :as os]
       [guadalete.schema.core :refer [FlowMap Flow Scene JobMap Room Light Signal]]
       [guadalete.utils.config :as config]
-      ))
+      [guadalete.tasks.async :as async]))
 
 (def task-schema
   {:task-map   os/TaskMap
@@ -28,19 +30,23 @@
          (s/validate schema data)
          (log/debug (str "valid " schema ":") data)
          (catch Exception e
-           (log/error "ERROR" (.getMessage e))))
-       )
+           (log/error "ERROR" (.getMessage e)))))
 
 (defn base-job []
       {:workflow       []
        :lifecycles     []
        :catalog        []
+       :triggers       []
+       :windows        []
        :task-scheduler :onyx.task-scheduler/balanced})
 
 (s/defn add-task :- os/Job
         "Adds a task's task-definition to a job"
         [{:keys [lifecycles triggers windows flow-conditions] :as job}
          {:keys [task schema] :as task-definition}]
+
+        (log/debug "ass task" (pretty task))
+
         (when schema (s/validate schema task))
         (cond-> job
                 true (update :catalog conj (:task-map task))
@@ -59,110 +65,52 @@
 (defmulti task-from-item
           (fn [[id {:keys [ilk]}]] ilk))
 
-(defmethod task-from-item :signal
-           [[id signal]]
-           (let [
-                 task (signal-task/read-value signal)]
+(defmethod task-from-item :signal [[id signal]]
+           (item-tasks/signal id))
 
-                (validate!
-                  (:schema task)
-                  (:task task))
+(defmethod task-from-item :light [[id light]]
+           (item-tasks/light id))
 
-                [id task]))
+(defmethod task-from-item :color [[id color]]
+           (item-tasks/color id))
 
-(defmethod task-from-item :light
-           [[id light]]
-           (let [task {:task   {:task-map   {:onyx/name       :log-signal-config
-                                             :onyx/fn         ::log!
-                                             :onyx/type       :function
-                                             :onyx/batch-size 1}
-                                :lifecycles []}
-                       :schema {:task-map   os/TaskMap
-                                :lifecycles [os/Lifecycle]}}]
-                (log/debug ":light task from node" task)
-                [id task]))
+(defn- graph-tasks*
+       "Recursive helper for graph jobs."
+       [graph nodes result]
+       (if (empty? nodes)
+         result
+         (let [[head & tail] nodes
+               item (uber/attrs graph head)
+               task (task-from-item [head item])
+               result* (assoc result head task)]
+              (graph-tasks* graph tail result*))))
 
-(defmethod task-from-item :color
-           [[id color]]
-           (let [task {:task   {:task-map   {:onyx/name       :log-signal-config
-                                             :onyx/fn         ::log!
-                                             :onyx/type       :function
-                                             :onyx/batch-size 1}
-                                :lifecycles []}
-                       :schema {:task-map   os/TaskMap
-                                :lifecycles [os/Lifecycle]}}]
-                (log/debug ":color task from node" task)
-                [id task]))
+(defn- make-workflow
+       "Internal helper for creating the jobs workflow.
+       It's easy as… Just get the edges of the graph represented as two-dimensional vectors [:src :dest]"
+       [graph]
+       (->>
+         graph
+         (uber/edges)
+         (map (fn [e] [(:src e) (:dest e)]))
+         (into [])))
 
-(defn- graph-jobs [[scene-id graph] ]
-       (uber/pprint graph)
-       (let [sources (->> graph
-                          (graph/source-nodes)
-                          (map (fn [node] [node (uber/attrs graph node)]))
-                          (into {}))
-             leaves (->> graph
-                         (graph/leaf-nodes)
-                         (map (fn [node] [node (uber/attrs graph node)]))
-                         (into {}))
-
-             source-tasks (->> sources
-                               (map task-from-item)
-                               (into {}))
-
-             job (-> (base-job)
-                     (add-tasks (vals source-tasks)))
-             ]
-
-            ;(try
-            ;  (s/validate os/Job job)
-            ;  (log/debug "valid job!")
-            ;  (catch Exception e
-            ;    (log/error "ERRORR!" (.getMessage e))))
-
-            (log/debug "source-tasks" source-tasks)
-            ;(log/debug "sources" sources)
-            ;(log/debug "leaves" leaves)
-            (log/debug "job" (pretty job))
-            []))
+(defn- graph-jobs [[scene-id graph]]
+       (let [topological-ordering (alg/topsort graph)
+             tasks (graph-tasks* graph topological-ordering {})
+             workflow (make-workflow graph)
+             job (->
+                   (base-job)
+                   (add-tasks (vals tasks))
+                   (assoc :workflow workflow))]
+            {:name scene-id
+             :job  job}))
 
 ;(s/defn ^:always-validate from-flows :- s/Any
 (s/defn from-flows :- s/Any
         "Function for creating onyx jobs form signal flows."
         [flows :- FlowMap]
-
-        ;(validate! FlowMap flows)
-
-        (let [graph-map (graph/make-graphs flows)
-              ;_ (log/debug "graph-map" graph-map)
-              jobs (->> graph-map
-                        (map #(graph-jobs % ))
-                        (into []))]
-
-             (log/debug "jobs" jobs)
-
-             ;(doall
-             ;  (map (fn [[scene-id g]]
-             ;           (log/debug "graphs for scene:" scene-id)
-             ;           (let [
-             ;                 sources (graph/source-nodes g)
-             ;                 leaves (graph/leaf-nodes g)
-             ;                 search-specification {:start-nodes sources}
-             ;                 shortest-paths (alg/shortest-path g search-specification)
-             ;                 ]
-             ;
-             ;                ;(uber/pprint ts)
-             ;                ;(log/debug (into [] ts))
-             ;                (log/debug "sources:" (into [] sources))
-             ;                (log/debug "leaves:" (into [] leaves))
-             ;                (log/debug "shortest-paths:" (pretty shortest-paths))
-             ;                ;(log/debug "spanning-tree: " (pretty spanning-tree))
-             ;                ;(log/debug "nodes" (pretty nodes))
-             ;                ))
-             ;       graph-map))
-             ;(log/debug "graphs" (str graphs))
-             ;(log/debug "flows" (pretty flows))
-             ;(log/debug "lights" (pretty lights))
-
-             []
-             )
-        )
+        (let [graph-map (graph/make-graphs flows)]
+             (->> graph-map
+                  (map #(graph-jobs %))
+                  (into ()))))

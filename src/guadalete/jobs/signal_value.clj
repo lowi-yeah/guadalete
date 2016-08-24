@@ -23,8 +23,6 @@
        [redis :as redis]]
       [guadalete.jobs.state :as state]))
 
-
-
 (defn log! [segment]
       (log/debug "log!" segment)
       segment)
@@ -43,10 +41,11 @@
 
 
 (def base-job
-  {:workflow       [
-                    ;[:read-messages :log] [:log :write-messages]
-                    [:read-messages :write-messages]
-                    [:read-messages :publish-async]]
+  {:workflow       [[:read-messages :write-to-timeseries]
+                    ;[:read-messages :log]
+                    ;[:log :write-to-timeseries]
+                    ;[:read-messages :publish-async]
+                    ]
    :lifecycles     []
    :catalog        []
    :task-scheduler :onyx.task-scheduler/balanced})
@@ -66,19 +65,16 @@
                                              :onyx/batch-timeout 1000})
                           :lifecycle-opts {}}))
 
-                     (add-task (log-task :log))
+                     ;(add-task (log-task :log))
 
-                     (add-task
-                       (redis/output-task
-                         :write-messages
-                         {:task-opts      (onyx-defaults)
-                          :lifecycle-opts (merge (taks-config/redis) {:redis/prefix "sgnl"})}))
+                     (add-task (redis/write-signals-timeseries :write-to-timeseries))
+                     ;(add-task (redis/write-signal-value :write-signal-value))
 
-                     (add-task
-                       (async/publish-task
-                         :publish-async
-                         {:task-opts      (onyx-defaults)
-                          :lifecycle-opts {}}))
+                     ;(add-task
+                     ;  (async/publish-task
+                     ;    :publish-async
+                     ;    {:task-opts      (onyx-defaults)
+                     ;     :lifecycle-opts {}}))
                      )]
            job*))
 

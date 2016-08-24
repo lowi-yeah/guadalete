@@ -5,9 +5,12 @@
        [string :refer [capitalize trim]]
        [walk :refer [postwalk]]]
       [guadalete.tasks.kafka :as kafka-task]
-      [guadalete.config.task :as task-config]
+      [guadalete.config
+       [task :as task-config]
+       [onyx :refer [onyx-defaults]]]
       [schema.core :as s]
-      [taoensso.timbre :as log]))
+      [taoensso.timbre :as log]
+      [guadalete.tasks.async :as async]))
 
 
 (defn- make-kafka-topic [signal]
@@ -27,7 +30,11 @@
                             :onyx/batch-timeout 1000})
          :lifecycle-opts {}}))
 
-
+(defn async-subscribe [id]
+      (async/subscribe-task
+        (keyword id)
+        {:task-opts      (onyx-defaults)
+         :lifecycle-opts {:signal/id id}}))
 
 
 ;; I have no idea what that is:

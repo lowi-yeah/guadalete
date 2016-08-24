@@ -1,4 +1,4 @@
-(ns guadalete.jobs.signal-value-reader
+(ns guadalete.jobs.dev.signal-value-reader
     (:require
       [onyx.api]
       [onyx.plugin.kafka]
@@ -20,12 +20,13 @@
        [async :as async]
        [kafka :as kafka]
        [rethink :as rethink]
-       [redis :as redis]]
+       [redis :as redis-tasks]
+       [items :as item-tasks]]
       [guadalete.jobs.state :as state]))
 
 (def base-job
-  {:workflow       [[:subscribe :log]
-                    [:log :write]]
+  {:workflow       [[:read :log]
+                    [:log :write-to-async]]
    :lifecycles     []
    :catalog        []
    :task-scheduler :onyx.task-scheduler/balanced})
@@ -46,24 +47,27 @@
        :schema {:task-map   os/TaskMap
                 :lifecycles [os/Lifecycle]}})
 
-(defn configure-job
-      [job]
+(defn configure-async-job
+      [job signal-id]
       (let [job* (-> job
+
                      (add-task
-                       (async/subscribe-task
-                         :subscribe
-                         {:task-opts      (onyx-defaults)
-                          :lifecycle-opts {:signal/id "slowsine"}}))
+                       (item-tasks/signal :read (keyword signal-id))
+                       ;(async/subscribe-task
+                       ;  :read
+                       ;  {:task-opts      (onyx-defaults)
+                       ;   :lifecycle-opts {:signal/id signal-id}})
+                       )
 
                      (add-task (log-task :log))
 
                      (add-task
                        (async/output-task
-                         :write
-                         {:task-opts (onyx-defaults)}))
-                     )]
+                         :write-to-async
+                         {:task-opts (onyx-defaults)})))]
            job*))
 
-(defn build-job []
-      {:name :signal/value-reader
-       :job  (configure-job base-job)})
+
+(defn async-job [signal-id]
+      {:name :signal/async-values
+       :job  (configure-async-job base-job signal-id)})

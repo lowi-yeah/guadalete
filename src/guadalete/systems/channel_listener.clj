@@ -23,11 +23,16 @@
            component/Lifecycle
            (start [component]
                   (let [
-                        sine (state/subscribe :signal/value "sine")
-                        slowsine (state/subscribe :signal/value "slowsine")
+                        ;sine (state/subscribe :signal/value "sine")
+                        ;slowsine (state/subscribe :signal/value "slowsine")
                         ;quicksine-channel (state/subscribe :signal/value "quicksine")
                         ;stop-channel (run! [sine-channel quicksine-channel])
-                        stop-channel (run! [sine slowsine])
+
+                        channels (state/get-channels)
+
+                        _ (log/debug "channels" channels)
+
+                        stop-channel (run! channels)
                         ]
                        (assoc component :stop stop-channel)))
 
