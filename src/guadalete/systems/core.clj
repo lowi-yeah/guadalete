@@ -11,16 +11,10 @@
       [guadalete.systems.mqtt.core :refer [new-mqtt]]
       [guadalete.systems.mqtt-kafka-bridge :refer [new-mqtt-kafka-bridge]]
       [guadalete.systems.rethinkdb.core :refer [new-rethinkdb]]
-      [guadalete.systems.artnet.core :refer [new-artnet]]
-      [guadalete.systems.osc.core :refer [new-osc]]
-      [guadalete.systems.midi.core :refer [new-midi]]
-      ;[guadalete.systems.kafka-consumer.core :refer [new-kafka-consumer]]
+      [guadalete.systems.kafka-consumer.core :refer [new-kafka-consumer]]
       [guadalete.systems.kafka-async :refer [new-kafka-async-pipe]]
-      ;[guadalete.systems.channel-listener :refer [new-channel-listener]]
+      [guadalete.systems.channel-listener :refer [new-channel-listener]]
       [guadalete.jobs.component :refer [job-runner]]
-      [guadalete.signals.sine :refer [new-sine-signal]]
-      [guadalete.signals.weather :refer [new-weather-signal]]
-      [guadalete.signals.mock-switch :refer [new-mock-switch]]
       [guadalete.config
        [core :as config]
        [kafka :as kafka-config]]
@@ -40,16 +34,13 @@
                        :rethinkdb (new-rethinkdb (config/rethinkdb))
                        :mqtt-kafkabridge (component/using (new-mqtt-kafka-bridge) [:kafka :mqtt])
 
-                       :kafka-async (component/using
-                         (new-kafka-async-pipe {:config (kafka-config/consumer) :topik "gdlt-sgnl-v"})
-                         [:kafka])
+                       ;:kafka-async (component/using
+                       ;               (new-kafka-async-pipe {:config (kafka-config/consumer) :topik "gdlt-sgnl-v"})
+                       ;               [:kafka])
 
 
 
                        ;:onyx (new-onyx (config/onyx))
-                       ;:osc (new-osc (config/osc))
-                       ;:midi (new-midi (config/midi))
-                       ;:artnet (new-artnet (config/artnet))
 
                        ;//     _     _
                        ;//    (_)___| |__ ___
@@ -64,7 +55,10 @@
                        ;//  / _` / -_) '_ \ || / _` |
                        ;//  \__,_\___|_.__/\_,_\__, |
                        ;//                     |___/
-                       ;:kafka-consumer (new-kafka-consumer (kafka-config/consumer))
+                       :kafka-async (component/using
+                                      (new-kafka-async-pipe {:config (kafka-config/consumer) :topik "gdlt-sgnl-v"})
+                                      [:kafka])
+                       :kafka-consumer (new-kafka-consumer (kafka-config/consumer))
                        ;:channel-listener (new-channel-listener)
                        ])
 
