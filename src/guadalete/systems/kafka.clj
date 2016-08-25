@@ -10,7 +10,7 @@
     (:require
       [com.stuartsierra.component :as component]
       [clj-kafka.admin :as admin]
-      [clj-kafka.zk :refer [broker-list brokers]]
+      [clj-kafka.zk :refer [broker-list brokers topics]]
       [onyx.api]
       [taoensso.timbre :as log]
       ))
@@ -31,12 +31,13 @@
            component/Lifecycle
            (start [component]
                   (log/info "**************** Starting Kafka component ***************")
-                  (log/debug "***** zookeeper-address" zookeeper-address)
-                  (log/debug "***** kafka-topics" kafka-topics)
+                  (log/debug "**** zookeeper-address" zookeeper-address)
+                  (log/debug "**** kafka-topics" kafka-topics)
                   (bootstrap-topics zookeeper-address kafka-topics)
-                  (let [brokers (->> {"zookeeper.connect" zookeeper-address}
+                  (let [brokers (-> {"zookeeper.connect" zookeeper-address}
                                      (brokers)
                                      (broker-list))]
+                       (log/debug "**** brokers" (into [] brokers))
                        (assoc component :brokers brokers)))
 
            (stop [component]

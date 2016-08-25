@@ -52,11 +52,7 @@
       (let [job* (-> job
 
                      (add-task
-                       (item-tasks/signal :read (keyword signal-id))
-                       ;(async/subscribe-task
-                       ;  :read
-                       ;  {:task-opts      (onyx-defaults)
-                       ;   :lifecycle-opts {:signal/id signal-id}})
+                       (async/subscribe-task :read)
                        )
 
                      (add-task (log-task :log))

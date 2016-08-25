@@ -2,12 +2,10 @@
     (:require
       [onyx.api]
       [onyx.plugin.kafka]
-      [taoensso.carmine :as car]
       [taoensso.timbre :as log]
       [cheshire.core :as json]
       [onyx.schema :as os]
       [schema.core :as s]
-      [clj-uuid :as uuid]
       [guadalete.utils
        [job :refer [add-task add-tasks]]
        [util :refer [now]]
@@ -17,11 +15,8 @@
        [onyx :refer [onyx-defaults]]
        [kafka :refer [kafka-topic]]]
       [guadalete.tasks
-       [async :as async]
-       [kafka :as kafka]
-       [rethink :as rethink]
-       [redis :as redis]]
-      [guadalete.jobs.state :as state]))
+       [kafka :as kafka-tasks]
+       [redis :as redis-tasks]]))
 
 (defn log! [segment]
       (log/debug "log!" segment)
@@ -41,10 +36,9 @@
 
 
 (def base-job
-  {:workflow       [[:read-messages :write-to-timeseries]
-                    ;[:read-messages :log]
-                    ;[:log :write-to-timeseries]
-                    ;[:read-messages :publish-async]
+  {:workflow       [
+                    [:read-messages :write-to-timeseries]
+                    ;[:read-messages :log] [:log :write-to-timeseries]
                     ]
    :lifecycles     []
    :catalog        []
@@ -55,26 +49,18 @@
       [job]
       (let [job* (-> job
                      (add-task
-                       (kafka/input-task
+                       (kafka-tasks/input-task
                          :read-messages
                          {:task-opts      (merge
-                                            (taks-config/kafka)
+                                            (taks-config/kafka-consumer)
                                             {:kafka/topic        (kafka-topic :signal-value)
-                                             :kafka/group-id     "signal-value-consumer"
+                                             :kafka/group-id     "signal-timeseries-consumer"
                                              :onyx/batch-size    1
                                              :onyx/batch-timeout 1000})
                           :lifecycle-opts {}}))
 
-                     ;(add-task (log-task :log))
-
-                     (add-task (redis/write-signals-timeseries :write-to-timeseries))
-                     ;(add-task (redis/write-signal-value :write-signal-value))
-
-                     ;(add-task
-                     ;  (async/publish-task
-                     ;    :publish-async
-                     ;    {:task-opts      (onyx-defaults)
-                     ;     :lifecycle-opts {}}))
+                     (add-task (log-task :log))
+                     (add-task (redis-tasks/write-signals-timeseries :write-to-timeseries))
                      )]
            job*))
 

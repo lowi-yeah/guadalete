@@ -11,9 +11,10 @@
                        :subscriptions        {}}))
 
 (defn reset []
-      (reset! state-atom {:channels      {}
-                          :publications  {}
-                          :subscriptions {}}))
+      (reset! state-atom {:channels             {}
+                          :publication-channels {}
+                          :publications         {}
+                          :subscriptions        {}}))
 
 (defn publication-channel [topic]
       (let [channel (get-in @state-atom [:publication-channels topic])]

@@ -72,7 +72,6 @@
 (s/defn output-task
         [task-name :- s/Keyword
          {:keys [task-opts lifecycle-opts] :as opts}]
-
         (log/debug "output- kafka task options" task-opts)
 
         {:task   {:task-map   (merge {:onyx/name   task-name

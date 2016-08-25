@@ -8,6 +8,7 @@
        [rethinkdb :as rethinkdb]
        [redis :as redis]
        [onyx :as onyx]
+       [async :as async]
        [artnet :as artnet]
        ]))
 
@@ -17,4 +18,5 @@
 (defn rethinkdb [] (rethinkdb/config*))
 (defn redis [] (redis/config*))
 (defn onyx [] (onyx/config*))
+(defn async [] (async/config*))
 (defn artnet [] (artnet/config*))

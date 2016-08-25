@@ -38,7 +38,13 @@
 
 
 
-(defn kafka-topic [topic]
+(defn kafka-topic
+      ([topic]
+        (get-in topics [topic :name]))
+      ([topic id]
+        (str (get-in topics [topic :name]) "-" id)))
+
+(defn get-topic [topic]
       (get-in topics [topic :name]))
 
 (defn config* []
@@ -46,12 +52,12 @@
        :kafka-topics      (vals topics)})
 
 (defn consumer []
-      {"zookeeper.connect"           (env/get-value :zookeeper/address)
-       "group.id"                    "signal-value.consumer"
-       "auto.offset.reset"           "largest"
-       "auto.commit.enable"          "true"
-       "offsets.storage"             "kafka"
-       "auto.commit.interval.ms"     "1000"
+      {"zookeeper.connect"       (env/get-value :zookeeper/address)
+       "group.id"                "signal-value.consumer"
+       "auto.offset.reset"       "largest"
+       "auto.commit.enable"      "true"
+       "offsets.storage"         "kafka"
+       "auto.commit.interval.ms" "1000"
        ;"fetch.min.bytes"             "1"
        ;"socket.timeout.ms"           "1000"
        ;"socket.receive.buffer.bytes" "1024"

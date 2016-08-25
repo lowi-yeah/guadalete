@@ -14,33 +14,25 @@
       [guadalete.tasks.kafka :as kafka]
       ))
 
-
 (defn signal
       "Input task:
-          -> get signal (via core.async/sub) [:id :value :at]
+          -> get signal (via kafka) [:id :value :at]
           -> filter by timestamp? (discard older than…)"
       ([id]
         (signal id id))
       ([task-id signal-id]
         (kafka/input-task
-          :read-messages
+          task-id
           {:task-opts      (merge
-                             (task-config/kafka)
+                             (task-config/kafka-consumer)
                              {:kafka/topic        (kafka-topic :signal-value)
                               :kafka/group-id     (name task-id)
                               :onyx/batch-size    1
                               :onyx/batch-timeout 1000})
-           :lifecycle-opts {}})
-
-        ;(async/subscribe-task
-        ;  task-id
-        ;  {:task-opts      (onyx-defaults)
-        ;   :lifecycle-opts {:signal/id (name signal-id)}})
-
-        ))
+           :lifecycle-opts {}})))
 
 (defn color-log [segment]
-      (log/debug "colorrr" segment)
+      ;(log/debug "colorrr" segment)
       segment)
 
 (defn dump-window! [event window-id lower-bound upper-bound state]

@@ -4,7 +4,6 @@
       [onyx.api]
       [taoensso.timbre :as log]
       [guadalete.job-config :refer [make-jobs]]
-      [guadalete.jobs.state :as state]
       [guadalete.utils.config :as config]))
 
 (defn- start-job [peer-config {:keys [name job]}]
@@ -17,20 +16,13 @@
        (log/debug "stopping job" job-id)
        (onyx.api/kill-job peer-config job-id))
 
-(defrecord JobRunner [onyx kafka mqtt rethinkdb ]
+(defrecord JobRunner [onyx kafka mqtt rethinkdb]
            component/Lifecycle
            (start [component]
                   (log/info "starting component: JobRunner")
-                  (state/reset)
-
-                  (let [
-                        ;peer-config (:peer-config onyx)
-                        ;job-ids (into [] (map (partial start-job peer-config) (make-jobs onyx kafka mqtt rethinkdb artnet)))]
-                        ;(assoc component :job-ids job-ids :peer-config peer-config)))
-
-                        peer-config (:peer-config onyx)
+                  (let [peer-config (:peer-config onyx)
                         job-ids (into [] (map (partial start-job peer-config) (make-jobs onyx kafka mqtt rethinkdb)))]
-                        (assoc component :job-ids job-ids :peer-config peer-config)))
+                       (assoc component :job-ids job-ids :peer-config peer-config)))
 
            (stop [component]
                  (log/info "stopping component: JobRunner")

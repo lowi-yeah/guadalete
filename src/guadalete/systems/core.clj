@@ -9,6 +9,7 @@
       [guadalete.systems.onyx.core :refer [new-onyx]]
       [guadalete.systems.kafka :refer [new-kafka]]
       [guadalete.systems.mqtt.core :refer [new-mqtt]]
+      [guadalete.systems.async :refer [new-async]]
       [guadalete.systems.mqtt-kafka-bridge :refer [new-mqtt-kafka-bridge]]
       [guadalete.systems.rethinkdb.core :refer [new-rethinkdb]]
       [guadalete.systems.kafka-consumer.core :refer [new-kafka-consumer]]
@@ -33,14 +34,8 @@
                        :mqtt (new-mqtt (config/mqtt))
                        :rethinkdb (new-rethinkdb (config/rethinkdb))
                        :mqtt-kafkabridge (component/using (new-mqtt-kafka-bridge) [:kafka :mqtt])
+                       :onyx (new-onyx (config/onyx))
 
-                       ;:kafka-async (component/using
-                       ;               (new-kafka-async-pipe {:config (kafka-config/consumer) :topik "gdlt-sgnl-v"})
-                       ;               [:kafka])
-
-
-
-                       ;:onyx (new-onyx (config/onyx))
 
                        ;//     _     _
                        ;//    (_)___| |__ ___
@@ -48,17 +43,18 @@
                        ;//   _/ \___/_.__/__/
                        ;//  |__/
                        ; the jobs run by onyx
-                       ;:job-runner (component/using (job-runner) [:onyx :kafka :mqtt :rethinkdb])
+                       :job-runner (component/using (job-runner) [:onyx :kafka :mqtt :rethinkdb])
 
                        ;//      _     _
                        ;//   __| |___| |__ _  _ __ _
                        ;//  / _` / -_) '_ \ || / _` |
                        ;//  \__,_\___|_.__/\_,_\__, |
                        ;//                     |___/
-                       :kafka-async (component/using
-                                      (new-kafka-async-pipe {:config (kafka-config/consumer) :topik "gdlt-sgnl-v"})
-                                      [:kafka])
-                       :kafka-consumer (new-kafka-consumer (kafka-config/consumer))
+                       ;:kafka-consumer (component/using
+                       ;                  (new-kafka-consumer
+                       ;                    {:config (kafka-config/consumer)
+                       ;                     :topikz kafka-config/topics})
+                       ;                  [:kafka])
                        ;:channel-listener (new-channel-listener)
                        ])
 

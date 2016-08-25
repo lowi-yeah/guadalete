@@ -43,7 +43,7 @@
             (kafka/input-task
               :read-signal-config
               {:task-opts      (merge
-                                 (taks-config/kafka)
+                                 (taks-config/kafka-consumer)
                                  {:kafka/topic (kafka-topic :signal-config) :kafka/group-id "signal-config-consumer"})
                :lifecycle-opts {}}
               ))

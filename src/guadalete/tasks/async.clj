@@ -9,6 +9,8 @@
       [onyx.api]
       [onyx.plugin.core-async]
       [guadalete.schema.core :as gs]
+      [guadalete.config.onyx :refer [onyx-defaults]]
+      [guadalete.config.task :as taks-config]
       [guadalete.jobs.state :as state]))
 
 
@@ -49,15 +51,14 @@
   {:lifecycle/before-task-start inject-pub-ch})
 
 (s/defn publish-task
-        [task-name :- s/Keyword
-         {:keys [task-opts] :as opts}]
-        {:task   {:task-map   (merge {:onyx/name   task-name
-                                      :onyx/plugin :onyx.plugin.core-async/output
-                                      :onyx/type   :output
-                                      :onyx/medium :core.async
-                                      :onyx/doc    "Publishes segments to core.async"}
-                                     task-opts
-                                     )
+        [task-name :- s/Keyword]
+        {:task   {:task-map   (merge
+                                (onyx-defaults)
+                                {:onyx/name   task-name
+                                 :onyx/plugin :onyx.plugin.core-async/output
+                                 :onyx/type   :output
+                                 :onyx/medium :core.async
+                                 :onyx/doc    "Publishes segments to core.async"})
 
                   :lifecycles [{:lifecycle/task  task-name
                                 :lifecycle/calls ::publish-calls}
@@ -82,21 +83,18 @@
 
 
 (s/defn subscribe-task
-        [task-name :- s/Keyword
-         {:keys [task-opts lifecycle-opts] :as opts}]
+        [task-name :- s/Keyword]
 
-        {:task   {:task-map   (merge {:onyx/name   task-name
-                                      :onyx/plugin :onyx.plugin.core-async/input
-                                      :onyx/type   :input
-                                      :onyx/medium :core.async
-                                      :onyx/doc    "Reads segments from a core.async publication"}
-                                     task-opts
-                                     )
+        {:task   {:task-map   (merge
+                                (onyx-defaults)
+                                {:onyx/name   task-name
+                                 :onyx/plugin :onyx.plugin.core-async/input
+                                 :onyx/type   :input
+                                 :onyx/medium :core.async
+                                 :onyx/doc    "Reads segments from a core.async publication"})
 
-                  :lifecycles [(merge
-                                 lifecycle-opts
-                                 {:lifecycle/task  task-name
-                                  :lifecycle/calls ::subscribe-calls})
+                  :lifecycles [{:lifecycle/task  task-name
+                                :lifecycle/calls ::subscribe-calls}
                                {:lifecycle/task  task-name
                                 :lifecycle/calls :onyx.plugin.core-async/reader-calls}]}
          :schema {:lifecycles [os/Lifecycle]

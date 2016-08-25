@@ -39,7 +39,7 @@
                        (kafka/input-task
                          :read-messages
                          {:task-opts      (merge
-                                            (config/kafka)
+                                            (config/kafka-consumer)
                                             {:kafka/topic (kafka-topic :artnet) :kafka/group-id "artnet-consumer"})
                           :lifecycle-opts {}}))
 

@@ -23,7 +23,7 @@
       (kafka-task/input-task
         :read-messages
         {:task-opts      (merge
-                           (task-config/kafka)
+                           (task-config/kafka-consumer)
                            {:kafka/topic        (make-kafka-topic signal)
                             :kafka/group-id     "signal-value-consumer"
                             :onyx/batch-size    1

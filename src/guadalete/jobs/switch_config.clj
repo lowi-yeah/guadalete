@@ -30,7 +30,7 @@
                        (kafka/input-task
                          :read-switch-config
                          {:task-opts      (merge
-                                            (config/kafka)
+                                            (config/kafka-consumer)
                                             {:kafka/topic    (kafka-topic :switch-config)
                                              :kafka/group-id "switch-config-consumer"})
                           :lifecycle-opts {}}))

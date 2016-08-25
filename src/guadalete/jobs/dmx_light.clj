@@ -56,7 +56,7 @@
                        (kafka-task/input-task
                          :read-messages
                          {:task-opts      (merge
-                                            (taks-config/kafka)
+                                            (taks-config/kafka-consumer)
                                             {:kafka/topic        (kafka-topic :light-value)
                                              :kafka/group-id     "light-value-consumer"
                                              :onyx/batch-size    1
@@ -68,7 +68,7 @@
                        (kafka-task/output-task
                          :write-messages
                          {:task-opts      (merge
-                                            (taks-config/kafka)
+                                            (taks-config/kafka-producer)
                                             {:kafka/topic        (kafka-topic :artnet)
                                              :onyx/batch-size    1
                                              :onyx/batch-timeout 1000}
