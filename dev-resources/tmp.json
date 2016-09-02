@@ -1,5 +1,123 @@
-{"password": "$2a$10$cNdefnK9ZRvUchagTkuJAe5NJrv6iBaMQOqrzNUnzS5UV3Ma4GZDO",
-  "roles": [
-    "guadalete-ui.helpers.db-import/admin"
-  ],
-  "username": "lowi"}
+[ {
+  "name" : "fix",
+  "job" : {
+    "workflow" : [ [ "sine/in", "sine/out" ], [ "sine/out", "f286e22d-19ca-4c12-a287-6b6315c3523a" ], [ "slowsine/in", "slowsine/out" ], [ "slowsine/out", "f286e22d-19ca-4c12-a287-6b6315c3523a" ], [ "f286e22d-19ca-4c12-a287-6b6315c3523a", "e8bbf866-e2db-4465-8390-a6378b46fa29" ], [ "e8bbf866-e2db-4465-8390-a6378b46fa29", "1fc2b83a-fe56-4b3c-869e-e4350e086257" ] ],
+    "lifecycles" : [ {
+      "lifecycle/task" : "slowsine/in",
+      "lifecycle/calls" : "onyx.plugin.kafka/read-messages-calls"
+    }, {
+      "lifecycle/task" : "sine/in",
+      "lifecycle/calls" : "onyx.plugin.kafka/read-messages-calls"
+    }, {
+      "lifecycle/task" : "1fc2b83a-fe56-4b3c-869e-e4350e086257",
+      "lifecycle/calls" : "guadalete.onyx.tasks.async/out-calls",
+      "id" : "1fc2b83a-fe56-4b3c-869e-e4350e086257"
+    }, {
+      "lifecycle/task" : "1fc2b83a-fe56-4b3c-869e-e4350e086257",
+      "lifecycle/calls" : "onyx.plugin.core-async/writer-calls"
+    } ],
+    "catalog" : [ {
+      "kafka/zookeeper" : "zookeeper1:2181",
+      "onyx/plugin" : "onyx.plugin.kafka/read-messages",
+      "onyx/medium" : "kafka",
+      "kafka/offset-reset" : "largest",
+      "kafka/force-reset?" : true,
+      "onyx/batch-timeout" : 1000,
+      "onyx/type" : "input",
+      "onyx/name" : "slowsine/in",
+      "kafka/topic" : "gdlt-sgnl-v",
+      "kafka/group-id" : "in",
+      "onyx/max-peers" : 1,
+      "onyx/min-peers" : 1,
+      "onyx/doc" : "Consumes gdlt-sgnl-v messages from Kafka",
+      "kafka/empty-read-back-off" : 50,
+      "kafka/fetch-size" : 307200,
+      "onyx/batch-size" : 10,
+      "kafka/deserializer-fn" : "guadalete.onyx.tasks.util/deserialize-message-json",
+      "kafka/wrap-with-metadata?" : false,
+      "kafka/commit-interval" : 50,
+      "kafka/chan-capacity" : 100
+    }, {
+      "onyx/min-peers" : 1,
+      "onyx/max-peers" : 1,
+      "onyx/batch-size" : 10,
+      "onyx/batch-timeout" : 1000,
+      "onyx/name" : "slowsine/out",
+      "onyx/fn" : "guadalete.onyx.tasks.scene/log-segment",
+      "onyx/type" : "function",
+      "onyx/doc" : "The identity function with a log"
+    }, {
+      "kafka/zookeeper" : "zookeeper1:2181",
+      "onyx/plugin" : "onyx.plugin.kafka/read-messages",
+      "onyx/medium" : "kafka",
+      "kafka/offset-reset" : "largest",
+      "kafka/force-reset?" : true,
+      "onyx/batch-timeout" : 1000,
+      "onyx/type" : "input",
+      "onyx/name" : "sine/in",
+      "kafka/topic" : "gdlt-sgnl-v",
+      "kafka/group-id" : "in",
+      "onyx/max-peers" : 1,
+      "onyx/min-peers" : 1,
+      "onyx/doc" : "Consumes gdlt-sgnl-v messages from Kafka",
+      "kafka/empty-read-back-off" : 50,
+      "kafka/fetch-size" : 307200,
+      "onyx/batch-size" : 10,
+      "kafka/deserializer-fn" : "guadalete.onyx.tasks.util/deserialize-message-json",
+      "kafka/wrap-with-metadata?" : false,
+      "kafka/commit-interval" : 50,
+      "kafka/chan-capacity" : 100
+    }, {
+      "onyx/min-peers" : 1,
+      "onyx/max-peers" : 1,
+      "onyx/batch-size" : 10,
+      "onyx/batch-timeout" : 1000,
+      "onyx/name" : "sine/out",
+      "onyx/fn" : "guadalete.onyx.tasks.scene/log-segment",
+      "onyx/type" : "function",
+      "onyx/doc" : "The identity function with a log"
+    }, {
+      "onyx/min-peers" : 1,
+      "onyx/max-peers" : 1,
+      "onyx/batch-size" : 10,
+      "onyx/batch-timeout" : 1000,
+      "onyx/name" : "f286e22d-19ca-4c12-a287-6b6315c3523a",
+      "onyx/fn" : "guadalete.onyx.tasks.mixer/log-mixer",
+      "onyx/type" : "function",
+      "onyx/uniqueness-key" : "at",
+      "onyx/doc" : "Logs the color to the console for debugging"
+    }, {
+      "onyx/min-peers" : 1,
+      "onyx/max-peers" : 1,
+      "onyx/batch-size" : 10,
+      "onyx/batch-timeout" : 1000,
+      "onyx/name" : "e8bbf866-e2db-4465-8390-a6378b46fa29",
+      "onyx/fn" : "guadalete.onyx.tasks.scene/log-color",
+      "onyx/type" : "function",
+      "onyx/uniqueness-key" : "at",
+      "onyx/doc" : "Logs the color to the console for debugging"
+    }, {
+      "onyx/name" : "1fc2b83a-fe56-4b3c-869e-e4350e086257",
+      "onyx/plugin" : "onyx.plugin.core-async/output",
+      "onyx/type" : "output",
+      "onyx/medium" : "core.async",
+      "onyx/doc" : "Writes segments to a core.async channel",
+      "onyx/min-peers" : 1,
+      "onyx/max-peers" : 1,
+      "onyx/batch-size" : 10,
+      "onyx/batch-timeout" : 1000
+    } ],
+    "triggers" : [ ],
+    "windows" : [ ],
+    "flow-conditions" : [ {
+      "flow/from" : "sine/in",
+      "flow/to" : [ "sine/out" ],
+      "flow/predicate" : "guadalete.onyx.filters/signal-id"
+    }, {
+      "flow/from" : "slowsine/in",
+      "flow/to" : [ "slowsine/out" ],
+      "flow/predicate" : "guadalete.onyx.filters/signal-id"
+    } ],
+    "task-scheduler" : "onyx.task-scheduler/balanced"
+  }
+} ]

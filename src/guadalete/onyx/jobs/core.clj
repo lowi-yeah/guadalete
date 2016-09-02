@@ -1,39 +1,39 @@
 (ns guadalete.onyx.jobs.core
     (:require
       [onyx.api]
-      [onyx.plugin.kafka]
+      [guadalete.systems.rethinkdb.core :as db]
+      [guadalete.onyx.jobs.scene :as scene-jobs]
+      [guadalete.onyx.jobs.base :as base-jobs]
+      [guadalete.onyx.jobs.development :as dev-jobs]
       [taoensso.timbre :as log]
-      [onyx.schema :as os]
-      [schema.core :as s]
+      [guadalete.graph.core :as graph]
       [guadalete.utils.util :refer [pretty]]
+
       ))
 
-(def empty-job
-  {:workflow       []
-   :lifecycles     []
-   :catalog        []
-   :triggers       []
-   :windows        []
-   :task-scheduler :onyx.task-scheduler/balanced})
 
-(s/defn add-task :- os/Job
-        "Adds a task's task-definition to a job"
-        [{:keys [lifecycles triggers windows flow-conditions] :as job}
-         {:keys [task schema] :as task-definition}]
+(defn make-jobs
+      [onyx kafka mqtt rethinkdb]
+      (log/debug "**************** job-runner/make-jobs:")
+      (with-open
+        [db-conn (db/connect! rethinkdb)]
+        (let [
+              ;flows (db/all-flows db-conn)
+              ;graph-map (graph/make-graphs flows)
+              ;graph-jobs (scene-jobs/from-graphs graph-map)
+              ;signal-config (base-jobs/signal-config-consumer)
+              signal-value (base-jobs/signal-timeseries-consumer)
+              window-test (dev-jobs/window-test)
+              ;all-jobs (conj () signal-config )
+              ;all-jobs (conj () window-test)
+              ;all-jobs (conj () signal-value )
+              all-jobs (conj () signal-value window-test)
 
-        (log/debug "add task" (pretty task))
+              ]
 
-        (when schema (s/validate schema task))
-        (cond-> job
-                true (update :catalog conj (:task-map task))
-                lifecycles (update :lifecycles into (:lifecycles task))
-                triggers (update :triggers into (:triggers task))
-                windows (update :windows into (:windows task))
-                flow-conditions (update :flow-conditions into (:flow-conditions task))))
-
-(defn add-tasks
-      "Same thing as add-task, but accepts a collection of tasks"
-      ([job tasks]
-        (reduce
-          (fn [job task]
-              (add-task job task)) job tasks)))
+             ;(log/debug "all-jobs" (pretty all-jobs))
+             ;(log/debug "graph-jobs" (pretty graph-jobs))
+             all-jobs
+             ;graph-jobs
+             ))
+      )

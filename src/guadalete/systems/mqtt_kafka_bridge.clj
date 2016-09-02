@@ -31,26 +31,25 @@
 (defn- dispatch! [kafka-producer ^String mqtt-topic _ ^bytes mqtt-payload]
        (let [{:keys [topic key message]} (mqtt->kafka mqtt-topic mqtt-payload)
              r (record topic key (-> message (generate-string)))]
-            ;(log/debug r)
+            (log/debug r)
             (send kafka-producer r)))
 
 (defrecord MqttKafkaBridge [kafka mqtt]
            component/Lifecycle
            (start [component]
                   (log/info "Starting component: mqtt-kafka-bridge")
-                  (log/info "kafka" kafka)
+                  ;(log/info "kafka" kafka)
                   (log/info "mqtt topics" (:topics mqtt))
-                  (let [p-config {"bootstrap.servers" (:brokers kafka)
-                                  "acks"              "0"
-                                  "batch.size"        "1"
-                                  "linger.ms"         "0"
-                                  ;"max.request.size"  "100"
-                                  }
-                        p (producer p-config (string-serializer) (string-serializer))
-                        ;p (producer p-config (byte-array-serializer) (byte-array-serializer))
-                        ]
-                       (mh/subscribe (:conn mqtt) (:topics mqtt) (partial dispatch! p))
-                       component))
+
+                  (if (:brokers kafka)
+                    (let [p-config {"bootstrap.servers" (:brokers kafka)
+                                    "acks"              "0"
+                                    "batch.size"        "1"
+                                    "linger.ms"         "0"}
+                          p (producer p-config (string-serializer) (string-serializer))]
+                         (mh/subscribe (:conn mqtt) (:topics mqtt) (partial dispatch! p)))
+                    (log/warn "MQTT->Kafka brigde not started, as no kafka brokers could be found. bummer…"))
+                  component)
 
            (stop [component]
                  (log/info "Stopping component: mqtt-kafka-bridge")

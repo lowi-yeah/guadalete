@@ -13,6 +13,7 @@
       [clj-kafka.zk :refer [broker-list brokers topics]]
       [onyx.api]
       [taoensso.timbre :as log]
+      [clojure.stacktrace :refer [print-stack-trace]]
       ))
 
 (defn- bootstrap-topics
@@ -31,14 +32,19 @@
            component/Lifecycle
            (start [component]
                   (log/info "**************** Starting Kafka component ***************")
-                  (log/debug "**** zookeeper-address" zookeeper-address)
-                  (log/debug "**** kafka-topics" kafka-topics)
-                  (bootstrap-topics zookeeper-address kafka-topics)
-                  (let [brokers (-> {"zookeeper.connect" zookeeper-address}
-                                     (brokers)
-                                     (broker-list))]
-                       (log/debug "**** brokers" (into [] brokers))
-                       (assoc component :brokers brokers)))
+                  ;(log/debug "**** zookeeper-address" zookeeper-address)
+                  ;(log/debug "**** kafka-topics" kafka-topics)
+                  (try
+                    (bootstrap-topics zookeeper-address kafka-topics)
+                    (let [brokers (-> {"zookeeper.connect" zookeeper-address}
+                                      (brokers)
+                                      (broker-list))]
+                         (log/debug "**** brokers" brokers)
+                         (assoc component :brokers brokers))
+                    (catch Exception e
+                      (log/error "ERROR in Onyx component" e)
+                      (print-stack-trace e)
+                      component)))
 
            (stop [component]
                  (log/info "Stopping Kafka component")

@@ -73,13 +73,19 @@
 ;//  \__, |_| \__,_| .__/_||_|
 ;//  |___/         |_|
 
-;(s/defschema GraphSchema
-;             {:node-map s/Any
-;              :allow-parallel? s/Bool
-;              :undirected? s/Bool
-;              :attrs s/Any
-;              :cached-hash s/Any
-;              })
+(s/defschema Ubergraph
+             ;{
+             ; (s/optional-key :node-map)        s/Any
+             ; (s/optional-key :allow-parallel?) s/Bool
+             ; (s/optional-key :undirected?)     s/Bool
+             ; (s/optional-key :attrs)           s/Any
+             ; (s/optional-key :cached-hash)     s/Any
+             ; }
+             {s/Keyword s/Any})
+
+(s/defschema GraphMap
+             {s/Keyword Ubergraph})
+
 ;//   _ _ _ _ _ _ _ _
 ;//  (_)_)_)_)_)_)_)_)
 

@@ -1,4 +1,4 @@
-(ns guadalete.tasks.rethink
+(ns guadalete.onyx.tasks.rethink
     "A task for writing data into rethinkDB"
     (:require [clojure
                [string :refer [capitalize trim]]
@@ -25,6 +25,7 @@
 (s/defschema RethinkOutputTask {:rethinkdb/table s/Keyword
                                 :rethinkdb/data  gs/Signal})
 
+
 (defn upsert!
       "upsert! takes a list of items [{:id \"item-1\" ...}, {:id \"item-2\" ...} ...]
        and insert them in the given table if the id is not present in the database, or does an update if the item already exists.\n\n"
@@ -50,11 +51,13 @@
       (let [db-connection (:db-connection event)
             table (:rethinkdb/table lifecycle)
             batch (:onyx.core/batch event)
-            items (map #(assoc (get-in % [:message :data]) :id (get-in % [:message :id])) batch)]
-
-           ;(let [items* (into [] items)] (when-not (empty? items*) (log/debug (str "RethinkDB: Write to " table ": " items*))))
-
-           (upsert! db-connection table items)
+            items
+            (->> batch
+                 (map #(assoc (get-in % [:message :data]) :id (get-in % [:message :id])))
+                 (into []))]
+           (when (not-empty items)
+                 ;(log/debug "upsert!" items)
+                 (upsert! db-connection table items))
            {}))
 
 (defn connect [event lifecycle]
@@ -75,7 +78,7 @@
    :lifecycle/after-task-stop   disconnect
    :lifecycle/after-read-batch  write-to-database})
 
-(s/defn output-task
+(s/defn output
         [task-name :- s/Keyword
          {:keys [task-opts lifecycle-opts] :as opts}]
         {:task   {:task-map   (merge {:onyx/name   task-name
@@ -89,8 +92,9 @@
                                      task-opts
                                      )
                   :lifecycles [(merge {:lifecycle/task  task-name
-                                       :lifecycle/calls :guadalete.tasks.rethink/rethink-lifecycle}
+                                       :lifecycle/calls ::rethink-lifecycle}
                                       lifecycle-opts)
                                ]}
          :schema {:task-map   (merge os/TaskMap RethinkOutputTask)
                   :lifecycles [os/Lifecycle]}})
+

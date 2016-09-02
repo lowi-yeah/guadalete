@@ -147,12 +147,10 @@
         (let [flows (-> (r/table "scene")
                         (r/pluck [:id :flows])
                         (r/map (r/fn [flow*] {:scene (r/get-field flow* :id) :flows (r/get-field flow* :flows)}))
-                        (r/run conn))
-              flows* (->> flows
-                          (map (fn [{:keys [scene flows]}] (assemble-flows conn scene flows)))
-                          (into {}))]
-             (log/debug "flows*" flows*)
-             flows*)
+                        (r/run conn))]
+             (->> flows
+                  (map (fn [{:keys [scene flows]}] (assemble-flows conn scene flows)))
+                  (into {})))
         (catch Exception e (str "caught exception: " (.getMessage e)))))
 
 

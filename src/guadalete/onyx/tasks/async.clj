@@ -1,4 +1,4 @@
-(ns guadalete.tasks.async
+(ns guadalete.onyx.tasks.async
     "A task for writing onyx data into async channels"
     (:require
       [clojure.core.async :refer [chan pub sub >!! <!! close!]]
@@ -11,15 +11,15 @@
       [guadalete.schema.core :as gs]
       [guadalete.config.onyx :refer [onyx-defaults]]
       [guadalete.config.task :as taks-config]
-      [guadalete.jobs.state :as state]))
+      ))
 
 
 (defn inject-out-ch [event lifecycle]
-      {:core.async/chan (state/out-channel (:id lifecycle))})
+      {:core.async/chan (chan 1000)})
 (def out-calls
   {:lifecycle/before-task-start inject-out-ch})
 
-(s/defn output-task
+(s/defn output
         [task-name :- s/Keyword
          {:keys [task-opts lifecycle-opts] :as opts}]
         {:task   {:task-map   (merge
@@ -44,8 +44,7 @@
 ;//  | .__/\_,_|_.__/_|_/__/_||_|
 ;//  |_|
 (defn inject-pub-ch [event lifecycle]
-      (let [channel (state/publication-channel :signal/value)]
-           {:core.async/chan channel}))
+      {:core.async/chan (chan 1000)})
 
 (def publish-calls
   {:lifecycle/before-task-start inject-pub-ch})
@@ -75,8 +74,7 @@
 
 
 (defn inject-sub-ch [event lifecycle]
-      (let [channel (state/subscribe :signal/value (:signal/id lifecycle))]
-           {:core.async/chan channel}))
+      {:core.async/chan (chan 1000)})
 
 (def subscribe-calls
   {:lifecycle/before-task-start inject-sub-ch})

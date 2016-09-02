@@ -14,10 +14,10 @@
    [clojurewerkz/machine_head "1.0.0-beta9"]
    [com.apa512/rethinkdb "0.15.19"]
    [org.clojure/tools.nrepl "0.2.12"]
-   [org.onyxplatform/onyx "0.9.4"]
-   [org.onyxplatform/onyx-kafka "0.9.4.0"]
+   [org.onyxplatform/onyx "0.9.9"]
+   [org.onyxplatform/onyx-kafka-0.8 "0.9.9.1-20160719.024045-1"]
    [org.onyxplatform/onyx-redis "0.9.0.1"]
-   [org.onyxplatform/lib-onyx "0.8.12.0-20160314.202620-2"]
+   [org.onyxplatform/lib-onyx "0.9.7.1"]
    [com.taoensso/encore "2.52.1"]
    [com.taoensso/carmine "2.12.2"]
    [com.taoensso/timbre "4.3.1"]
@@ -31,5 +31,10 @@
    [javax.jmdns/jmdns "3.4.1"]
    [commons-net "3.0.1"]
    [overtone/at-at "1.1.1"]]
+
   :source-paths
-  ["src"])
+  ["src"]
+
+  :repl-options
+  {:prompt (fn [ns] (str "\033[1;32m" ns "=>" "\033[0m "))}
+  )

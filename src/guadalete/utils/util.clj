@@ -2,9 +2,18 @@
     (:require
       [taoensso.timbre :refer (tracef debugf infof)]
       [cheshire.core :refer :all]
+      [taoensso.timbre :as log]
       [schema.core :as s]
       [clj-time.core :as t]
-      [clj-time.coerce :as tc]))
+      [clj-time.coerce :as tc]
+      [schema.core :as s]))
+
+(defn deep-merge
+      "Deep merge two maps"
+      [& values]
+      (if (every? map? values)
+        (apply merge-with deep-merge values)
+        (last values)))
 
 (defn pretty
       "Returns a prettyprinted JSON representation of the argument"
@@ -30,3 +39,20 @@
       "milliseconds since Unix epoch"
       []
       (tc/to-long (t/now)))
+
+(defn merge-keywords
+      "merges the names of two keywords [:key-0 :key-1] into one namespaced keyword :key-0/key-1"
+      [key-0 key-1]
+      ;(keyword (str (name key-0) "-" (name key-1)))
+      (keyword (name key-0) (name key-1))
+      )
+
+(defn validate!
+      [schema data]
+      (try
+        (log/debug "validate" (keys data))
+        ;(log/debug "schema" schema)
+        (s/validate schema data)
+        (log/debug "**** VALID! ****")
+        (catch Exception e
+          (log/error "ERROR" (.getMessage e)))))

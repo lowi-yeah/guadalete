@@ -42,7 +42,7 @@
        @see: https://www.infoq.com/articles/redis-time-series"
       [conn namespace prefix items]
       (doseq [item items]
-             (let [id (car/wcar conn (car/incr (str prefix ":id")))
+             (let [id (car/wcar conn (car/incr (str namespace ":" prefix ":id")))
                    key (str namespace ":" prefix ":" id)
                    item* (assoc item :ev-id id)]
                   (car/wcar conn

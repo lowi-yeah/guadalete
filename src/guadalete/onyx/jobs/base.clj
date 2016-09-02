@@ -1,22 +1,22 @@
 (ns guadalete.onyx.jobs.base
     (:require
       [taoensso.timbre :as log]
-      [guadalete.onyx.jobs.core :refer [empty-job add-tasks]]
+      [guadalete.onyx.jobs.util :refer [empty-job add-tasks]]
       [guadalete.onyx.tasks.kafka :as kafka-tasks]
       [guadalete.onyx.tasks.redis :as redis-tasks]
-      [guadalete.config.kafka :as kafka-config]))
-
+      [guadalete.onyx.tasks.rethink :as rethink-tasks]
+      [guadalete.onyx.tasks.logging :as log-tasks]
+      [guadalete.config.kafka :as kafka-config]
+      [guadalete.config.task :as taks-config]
+      [guadalete.config.onyx :refer [onyx-defaults]]))
 
 (defn signal-timeseries-consumer []
       (let [
-            workflow [[:read-from-kafka :write-to-redis]]
-
-            options {:kafka/topic    (kafka-config/get-topic :signal-value)
-                     :kafka/group-id "signal-timeseries-consumer"}
-            tasks [
-                   (kafka-tasks/signal-value-consumer :read-from-kafka)
-                   (redis-tasks/write-signals-timeseries :write-to-redis)
-                   ]
+            workflow [[:read-from-kafka :loggg]
+                      [:loggg :write-to-redis]]
+            tasks [(kafka-tasks/signal-value-consumer :read-from-kafka "signal-value-consumer")
+                   (log-tasks/log :loggg)
+                   (redis-tasks/write-signals-timeseries :write-to-redis)]
 
             job (-> empty-job
                     (add-tasks tasks)
@@ -25,5 +25,16 @@
             ]
            (log/debug "signal-timeseries-consumer:" job)
            {:name :signal/value-logger
-            :job  job}
-           ))
+            :job  job}))
+
+(defn signal-config-consumer []
+      (let [
+            workflow [[:read-from-kafka :write-to-rethink]]
+            tasks [(kafka-tasks/signal-config-consumer :read-from-kafka)
+                   (rethink-tasks/output :write-to-rethink {:task-opts (onyx-defaults) :lifecycle-opts (merge (taks-config/rethink) {:rethinkdb/table "signal"})})]
+            job (-> empty-job
+                    (add-tasks tasks)
+                    (assoc :workflow workflow))
+            ]
+           {:name :signal/config-handler
+            :job  job}))
