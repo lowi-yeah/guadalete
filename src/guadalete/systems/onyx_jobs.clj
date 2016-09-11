@@ -21,15 +21,25 @@
             (map (partial start-job peer-config))
             (into [])))
 
-(defrecord JobRunner [onyx kafka mqtt rethinkdb]
+(defrecord JobRunner [rethinkdb
+                      ;onyx kafka mqtt
+                      ]
            component/Lifecycle
            (start [component]
                   (log/info "starting component: JobRunner")
                   (try
-                    (let [peer-config (:peer-config onyx)
-                          jobs (make-jobs onyx kafka mqtt rethinkdb)
-                          job-ids (start-jobs peer-config jobs)]
-                         (assoc component :job-ids job-ids :peer-config peer-config))
+                    (let [
+                          ;peer-config (:peer-config onyx)
+                          jobs (make-jobs {:rethinkdb rethinkdb
+                                           ;:onyx      onyx
+                                           ;:kafka     kafka
+                                           ;:mqtt      mqtt
+                                           })
+                          ;job-ids (start-jobs peer-config jobs)
+                          ]
+                         ;(assoc component :job-ids job-ids :peer-config peer-config)
+                         component
+                         )
                     (catch Exception e
                       (log/error "ERROR in JobRunner" e)
                       (print-stack-trace e)

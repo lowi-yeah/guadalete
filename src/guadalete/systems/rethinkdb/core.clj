@@ -3,7 +3,9 @@
       [com.stuartsierra.component :as component]
       [rethinkdb.query :as r]
       [taoensso.timbre :as log]
-      [guadalete.utils.util :refer [pretty in? kw*]]))
+      [guadalete.utils.util :refer [pretty in? validate!]]
+      [schema.core :as s]
+      [guadalete.schema.core :as gs]))
 
 ;//   _            _      _
 ;//  | |__ ___ ___| |_ ___ |_ _ _ __ _ _ __
@@ -22,6 +24,9 @@
                    (log/debug "table exists?" table-name (in? existing-tables table-name))
                    (when-not (in? existing-tables table-name)
                              (r/run (r/table-create table-name) conn)))))
+
+
+
 
 ;//             _
 ;//   __ _ _ __(_)
@@ -56,17 +61,17 @@
 
 
 (defn all
-      "Retrieves all scenes from all rooms"
+      "Retrieves all things of the given type from all rooms"
       [conn type]
       (-> (r/table (name type))
           (r/run conn)))
 
-(defn all-scenes
-      "Retrieves all scenes from all rooms"
-      [conn]
-      (let []
-           (-> (r/table "scene")
-               (r/run conn))))
+(s/defn ^:always-validate all-scenes :- [gs/Scene]
+        "Retrieves all scenes from all rooms"
+        [conn]
+        (-> (r/table "scene")
+            (r/run conn)
+            (gs/coerce-scenes)))
 
 (defn all-lights
       "Retrieves all scenes from all rooms"
@@ -105,53 +110,108 @@
                 (map #(assemble-room conn %))
                 (into []))))
 
+(defn- purge
+       "removes the :created and :updated fields from each entry in the given collection"
+       [coll]
+       (->> coll
+            (map #(dissoc % :created :updated))))
 
-(defn- load-item [conn scene-id flow-reference]
-       (let [nodes (->
+(defn- coerce
+       "removes the :created and :updated fields from each entry in the given collection"
+       [type coll]
+       (->> coll
+            (map (fn [item]
+                     (condp = type
+                            :light (gs/coerce-light item)
+                            :mixer (gs/coerce-mixer item)
+                            :signal (gs/coerce-signal item)
+                            :color (gs/coerce-color item))))))
+
+(defn all-items
+      "Retrieves all 'items' from the database.
+      An item, in this context is anything that can be used in a PD graph, eg. lights, colors, signals, etc…"
+      [conn]
+      (let [items [:light :mixer :signal :color]]
+           (->> items
+                (map (fn [i] [i (->> i
+                                     (all conn)
+                                     (purge)
+                                     (coerce i)
+                                     (into []))]))
+                (into {}))))
+
+;//    __ _
+;//   / _| |_____ __ _____
+;//  |  _| / _ \ V  V (_-<
+;//  |_| |_\___/\_/\_//__/
+;//
+
+(defmulti assemble-item
+          (fn [ilk flow-reference node item] ilk))
+
+(defmethod assemble-item :signal [ilk flow-reference node item]
+           ;(log/debug "assemble signal item")
+           ;(log/debug "\t ilk" ilk)
+           ;(log/debug "\t flow-reference" flow-reference)
+           ;(log/debug "\t node" node)
+           ;(log/debug "\t item" item)
+           ;(log/debug "")
+           {:id  (:id item)
+            :ilk ilk})
+
+(defmethod assemble-item :color [ilk flow-reference node item]
+           ;(log/debug "assemble color item")
+           ;(log/debug "\t ilk" ilk)
+           ;(log/debug "\t flow-reference" flow-reference)
+           ;(log/debug "\t node" node)
+           ;(log/debug "\t item" item)
+           ;(log/debug "")
+           (let [id (str (:node-id flow-reference) "-" (:id flow-reference))]
+                {:id id :ilk ilk}))
+
+(defmethod assemble-item :mixer [ilk flow-reference node item]
+           (log/debug "assemble mixer item" node item)
+           item)
+
+(defmethod assemble-item :light [ilk flow-reference node item]
+           ;(log/debug "assemble light item")
+           ;(log/debug "\t ilk" ilk)
+           ;(log/debug "\t flow-reference" flow-reference)
+           ;(log/debug "\t node" node)
+           ;(log/debug "\t item" item)
+           ;(log/debug "")
+           (let [id (:id flow-reference)]
+                {:id       id
+                 :ilk      ilk
+                 :channels (:channels item)}))
+
+
+(defn- load-item [conn flow-reference]
+       (let [
+             nodes (->
                      (r/table "scene")
-                     (r/get scene-id)
+                     (r/get (:scene-id flow-reference))
                      (r/get-field :nodes)
                      (r/run conn))
              node (->> nodes
                        (vals)
                        (filter (fn [n] (= (:node-id flow-reference) (:id n))))
                        (first))
-             item (-> (r/table (kw* (:ilk node)))
-                      (r/get (:item-id node))
+             ilk (keyword (:ilk node))
+             item (-> (r/table (keyword (:ilk node)))
+                      (r/get (str (:item-id node)))
                       (r/run conn))
-             item* (-> item
-                       (dissoc :created :updated)
-                       (assoc :ilk (kw* (:ilk node))))]
-            ;(log/debug "flow-reference"  flow-reference)
-            ;(log/debug "item*"  item*)
-
-            ;(-> flow-reference (assoc :item item*))
-            item*))
-
-(defn- assemble-flow [conn scene-id {:keys [id from to] :as flow}]
-       (let [from* (load-item conn scene-id from)
-             to* (load-item conn scene-id to)]
-            {:id   id
-             :from from*
-             :to   to*}))
-
-(defn- assemble-flows [conn scene-id flows]
-       (let [key (keyword scene-id)
-             val (into [] (map (fn [[id flow]] (assemble-flow conn scene-id flow)) flows))]
-            [key val]))
+             id (keyword (:id flow-reference))]
+            (assemble-item ilk flow-reference node item)
+            ))
 
 (defn all-flows
       "Retrieves every flow from every scene"
       [conn]
-      (try
-        (let [flows (-> (r/table "scene")
-                        (r/pluck [:id :flows])
-                        (r/map (r/fn [flow*] {:scene (r/get-field flow* :id) :flows (r/get-field flow* :flows)}))
-                        (r/run conn))]
-             (->> flows
-                  (map (fn [{:keys [scene flows]}] (assemble-flows conn scene flows)))
-                  (into {})))
-        (catch Exception e (str "caught exception: " (.getMessage e)))))
+      (-> (r/table "scene")
+          (r/pluck [:id :flows])
+          (r/map (r/fn [flow*] {:scene (r/get-field flow* :id) :flows (r/get-field flow* :flows)}))
+          (r/run conn)))
 
 
 

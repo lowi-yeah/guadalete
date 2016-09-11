@@ -1,4 +1,4 @@
-(ns guadalete.graph.core
+(ns guadalete.datastructures.graph
     (:require
       [ubergraph.core :as uber]
       [ubergraph.alg :as alg]
@@ -7,7 +7,7 @@
       [schema.core :as s]
       [guadalete.schema.core :as gs]))
 
-(defn- make-nodes
+(s/defn make-nodes
        "Internal helper for generating nodes from flow endpoints"
        [flows]
        (->> flows
@@ -22,6 +22,7 @@
 (defn- make-edges
        "Internal helper for generating edges from flows"
        [flows]
+       (log/debug "make-edges from flows" (pretty flows))
        (->> flows
             (map (fn [flow]
                      [(-> flow (get-in [:from :id]) (keyword))
@@ -34,7 +35,7 @@
 (defmethod replace :signal [node attributes _in-edges out-edges]
            (let [input-id (merge-keywords node :in)
                  input-attrs {:task-type :kafka/signals
-                              :signal-id        (:id attributes)}
+                              :signal-id (:id attributes)}
 
                  input-node [input-id input-attrs]
                  output-id (merge-keywords node :out)
@@ -56,6 +57,11 @@
 
 
 (defmethod replace :color [node attributes in-edges out-edges]
+
+           (log/debug "replace :color node ")
+           (log/debug "in-edges" (into [] in-edges))
+           (log/debug "out-edges" (into [] out-edges))
+
            (let [attributes* (assoc attributes :task-type :color/node)]
                 {:nodes [[node attributes*]]
                  :edges (into #{} (clojure.set/union in-edges out-edges))}))
@@ -115,9 +121,11 @@
              graph (-> (uber/digraph)
                        ;(uber/add-nodes* (make-nodes flows))
                        (uber/add-nodes-with-attrs* (make-nodes flows))
-                       (uber/add-edges* (make-edges flows))
-                       (expand-graph))]
-            ;(uber/pprint graph)
+                       ;(uber/add-edges* (make-edges flows))
+                       ;(expand-graph)
+                       )]
+            (log/debug "make-scene-graph")
+            (uber/pprint graph)
             [scene-id graph]))
 
 (defn make-graphs

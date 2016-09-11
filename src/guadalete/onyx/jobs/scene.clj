@@ -6,8 +6,6 @@
 
       [schema.core :as s]
       [onyx.schema :as os]
-      [guadalete.schema.core :as gs]
-      [guadalete.graph.core :as graph]
       [guadalete.onyx.tasks.scene :refer [node-task]]
       [guadalete.onyx.jobs.util :refer [empty-job add-task add-tasks add-flow-conditions]]
 
@@ -57,52 +55,3 @@
                 flow-condition (make-flow-condition graph head)
                 result* (conj result flow-condition)]
                (build-flow-conditions* graph tail result*))))
-
-(defn- make-flows
-       "Internal helper for creating the flows of a job.
-       It's easy as… Just get the edges of the graph represented as two-dimensional vectors [:src :dest]"
-       [graph]
-       (->>
-         graph
-         (uber/edges)
-         (map (fn [e] [(:src e) (:dest e)]))
-         (into [])))
-
-(s/defn make-job :- os/Job
-        "Creates an onyx job from a given scene-graph"
-        [[scene-id graph]]
-
-        (log/debug "\n\nMake graph job:")
-        (uber/pprint graph)
-
-        (let [topological-ordering (into [] (alg/topsort graph))
-              flows (make-flows graph)
-
-              ;_ (log/debug "topological-ordering" topological-ordering)
-              _ (log/debug "flows" flows)
-
-              catalog (build-catalog* graph topological-ordering flows [])
-              flow-conditions (build-flow-conditions* graph (uber/edges graph) [])
-
-              _ (log/debug "flow-conditions" (into [] flow-conditions))
-
-              job (-> empty-job
-                      (add-tasks catalog)
-                      (add-flow-conditions flow-conditions)
-                      (assoc :workflow flows))
-              ]
-
-             (log/debug "job" job)
-
-             {:name scene-id
-              :job  job}
-             ))
-
-(s/defn ^:always-validate from-graphs :- s/Any
-        ;(s/defn from-graphs :- s/Any
-        "Function for creating onyx jobs form signal flows."
-        [graph-map :- gs/GraphMap]
-        (let [graph-jobs (->> graph-map
-                              (map #(make-job %))
-                              (into ()))]
-             graph-jobs))

@@ -21,9 +21,9 @@
                           :onyx.bookkeeper/server?            true
                           ;:onyx.bookkeeper/delete-server-data?  true
                           :onyx.bookkeeper/local-quorum?      true
-                          :onyx.bookkeeper/local-quorum-ports [44061 44062 44063]
-                          :onyx.bookkeeper/base-journal-dir     "/Volumes/lowipro120/guadalete/bookkeeper/journal"
-                          :onyx.bookkeeper/base-ledger-dir      "/Volumes/lowipro120/guadalete/bookkeeper/ledger"
+                          :onyx.bookkeeper/local-quorum-ports [48011 48012 48013]
+                          :onyx.bookkeeper/base-journal-dir   "/Volumes/lowipro120/guadalete/bookkeeper/journal"
+                          :onyx.bookkeeper/base-ledger-dir    "/Volumes/lowipro120/guadalete/bookkeeper/ledger"
                           ;:onyx.bookkeeper/zk-ledgers-root-path "/ledgers"
                           :onyx/tenancy-id                    tenancy-id}}))
 

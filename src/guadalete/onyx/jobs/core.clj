@@ -6,34 +6,39 @@
       [guadalete.onyx.jobs.base :as base-jobs]
       [guadalete.onyx.jobs.development :as dev-jobs]
       [taoensso.timbre :as log]
-      [guadalete.graph.core :as graph]
-      [guadalete.utils.util :refer [pretty]]
-
-      ))
+      [guadalete.datastructures.graph :as graph]
+      [guadalete.datastructures.flow :as flow]
+      [guadalete.utils.util :refer [pretty validate!]]
+      [schema.core :as s]
+      [guadalete.schema.core :as gs]))
 
 
 (defn make-jobs
-      [onyx kafka mqtt rethinkdb]
+      [{:keys [rethinkdb]}]
       (log/debug "**************** job-runner/make-jobs:")
       (with-open
         [db-conn (db/connect! rethinkdb)]
         (let [
-              ;flows (db/all-flows db-conn)
-              ;graph-map (graph/make-graphs flows)
+              scenes (db/all-scenes db-conn)
+              items (db/all-items db-conn)
+
+              mapp (-> scenes
+                       (flow/assemble items)
+                       (flow/transform)
+                       )
+              ;graph-map (graph/make-graphs flow-map)
+
+              ;_ (log/debug "graph-map" graph-map)
+
               ;graph-jobs (scene-jobs/from-graphs graph-map)
               ;signal-config (base-jobs/signal-config-consumer)
-              signal-value (base-jobs/signal-timeseries-consumer)
-              window-test (dev-jobs/window-test)
-              ;all-jobs (conj () signal-config )
-              ;all-jobs (conj () window-test)
-              ;all-jobs (conj () signal-value )
-              all-jobs (conj () signal-value window-test)
-
+              ;signal-value (base-jobs/signal-timeseries-consumer)
+              ;all-jobs (conj () signal-value signal-config)
+              all-jobs ()
               ]
 
              ;(log/debug "all-jobs" (pretty all-jobs))
              ;(log/debug "graph-jobs" (pretty graph-jobs))
              all-jobs
-             ;graph-jobs
              ))
       )

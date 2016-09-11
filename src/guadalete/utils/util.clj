@@ -50,9 +50,9 @@
 (defn validate!
       [schema data]
       (try
-        (log/debug "validate" (keys data))
-        ;(log/debug "schema" schema)
+        (log/debug "validate" data)
+        (log/debug "schema" schema)
         (s/validate schema data)
         (log/debug "**** VALID! ****")
         (catch Exception e
-          (log/error "ERROR" (.getMessage e)))))
+          (log/error "ERROR" e))))

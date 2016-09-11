@@ -12,18 +12,12 @@
 
 (defn signal-timeseries-consumer []
       (let [
-            workflow [[:read-from-kafka :loggg]
-                      [:loggg :write-to-redis]]
+            workflow [[:read-from-kafka :write-to-redis]]
             tasks [(kafka-tasks/signal-value-consumer :read-from-kafka "signal-value-consumer")
-                   (log-tasks/log :loggg)
                    (redis-tasks/write-signals-timeseries :write-to-redis)]
-
             job (-> empty-job
                     (add-tasks tasks)
-                    (assoc :workflow workflow))
-
-            ]
-           (log/debug "signal-timeseries-consumer:" job)
+                    (assoc :workflow workflow))]
            {:name :signal/value-logger
             :job  job}))
 
@@ -34,7 +28,6 @@
                    (rethink-tasks/output :write-to-rethink {:task-opts (onyx-defaults) :lifecycle-opts (merge (taks-config/rethink) {:rethinkdb/table "signal"})})]
             job (-> empty-job
                     (add-tasks tasks)
-                    (assoc :workflow workflow))
-            ]
+                    (assoc :workflow workflow))]
            {:name :signal/config-handler
             :job  job}))

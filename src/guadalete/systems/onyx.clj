@@ -16,20 +16,14 @@
       [clojure.stacktrace :refer [print-stack-trace]]
       [guadalete.utils.util :refer [pretty]]))
 
-(defrecord Onyx [use-env? n-peers peer-config env-config zookeeper bookkeeper]
+(defrecord Onyx [use-env? n-peers peer-config env-config]
            component/Lifecycle
            (start [component]
                   (log/info "\n\n**************** Starting Onyx ****************\n")
-                  (log/info "\t zookeeper:" zookeeper)
-                  (log/info "\t bookkeeper:" bookkeeper)
-                  ;(log/info "java version: " (System/getProperty "java.runtime.version"))
-                  ;(log/info "n-peers: " n-peers)
                   (try
-                    (let [env (if use-env? (onyx.api/start-env env-config))
-                          peer-group (onyx.api/start-peer-group peer-config)
+                    (let [peer-group (onyx.api/start-peer-group peer-config)
                           peers (onyx.api/start-peers n-peers peer-group)]
                          (assoc component
-                                :env env
                                 :peer-group peer-group
                                 :peers peers
                                 :peer-config peer-config))
@@ -45,9 +39,6 @@
                  (when (:peer-group component)
                        (log/debug "shutdown peer group" (:peer-group component))
                        (onyx.api/shutdown-peer-group (:peer-group component)))
-                 (when (:env component)
-                       (log/debug "shutdown environment" (:env component))
-                       (onyx.api/shutdown-env (:env component)))
                  (assoc component
                         :peer-group nil
                         :peer-config nil

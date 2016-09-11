@@ -14,7 +14,7 @@
 
 (defn dump-window! [event window-id lower-bound upper-bound state]
       (log/debug (format "Window extent %s, [%s - %s] contents: %s"
-                       window-id lower-bound upper-bound state)))
+                         window-id lower-bound upper-bound state)))
 
 (s/defn identity-task
         "Identitiy function task used to anchor lifecycle hooks"
@@ -57,21 +57,21 @@
                                  :onyx/uniqueness-key :at
                                  })
 
-                    :windows  [{:window/id :collect-segments
-                                :window/task :write-to-nowhere
-                                :window/type :global
+                    :windows  [{:window/id          :collect-segments
+                                :window/task        :write-to-nowhere
+                                :window/type        :global
                                 :window/aggregation :onyx.windowing.aggregation/conj
-                                :window/window-key :at}]
+                                :window/window-key  :at}]
 
-                    :triggers [{:trigger/window-id :collect-segments
+                    :triggers [{:trigger/window-id  :collect-segments
                                 :trigger/refinement :onyx.refinements/accumulating
-                                :trigger/on :onyx.triggers/segment
-                                :trigger/threshold [5 :elements]
-                                :trigger/sync ::dump-window!}]
+                                :trigger/on         :onyx.triggers/segment
+                                :trigger/threshold  [5 :elements]
+                                :trigger/sync       ::dump-window!}]
                     }
            :schema {:task-map os/TaskMap
                     :windows  [os/Window]
-                    :triggers  [os/Trigger]
+                    :triggers [os/Trigger]
                     }}))
 
 ;; Window definition
@@ -87,7 +87,7 @@
                    (sum-signal-values :do-window-things)
                    (async-tasks/output
                      :write-to-nowhere {:task-opts
-                                        (assoc (onyx-defaults) :onyx/uniqueness-key :at)
+                                                        (assoc (onyx-defaults) :onyx/uniqueness-key :at)
                                         :lifecycle-opts {:id :write-to-nowhere}})
                    ]
             job (-> empty-job

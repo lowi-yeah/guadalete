@@ -44,9 +44,9 @@
 
 (def kafka-consumer-dev-config
   {:kafka-consumer/config
-   {"zookeeper.connect"           "zookeeper1:2181"
-    "group.id"                    "guadalete-ui.consumer"
-    "auto.offset.reset"           "smallest"
+   {"zookeeper.connect" "zookeeper1:2181"
+    "group.id"          "guadalete-ui.consumer"
+    "auto.offset.reset" "smallest"
     ;"offsets.storage"             "kafka"
     ;"auto.commit.interval.ms"     "100"
     ;"auto.commit.enable"          "true"

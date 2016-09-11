@@ -31,7 +31,7 @@
 (defn- dispatch! [kafka-producer ^String mqtt-topic _ ^bytes mqtt-payload]
        (let [{:keys [topic key message]} (mqtt->kafka mqtt-topic mqtt-payload)
              r (record topic key (-> message (generate-string)))]
-            (log/debug r)
+            ;(log/debug r)
             (send kafka-producer r)))
 
 (defrecord MqttKafkaBridge [kafka mqtt]
@@ -55,5 +55,5 @@
                  (log/info "Stopping component: mqtt-kafka-bridge")
                  component))
 
-(defn new-mqtt-kafka-bridge []
+(defn mqtt-kafka-bridge []
       (map->MqttKafkaBridge {}))

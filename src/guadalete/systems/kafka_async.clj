@@ -30,10 +30,10 @@
             c))
 
 
-(def config* {"zookeeper.connect" "127.0.0.1:2182"
-             "group.id" "clj-kafka.consumer"
-             "auto.offset.reset" "smallest"
-             "auto.commit.enable" "false"})
+(def config* {"zookeeper.connect"  "127.0.0.1:2182"
+              "group.id"           "clj-kafka.consumer"
+              "auto.offset.reset"  "smallest"
+              "auto.commit.enable" "false"})
 
 
 (defrecord KafkaAsync [kafka config topik]

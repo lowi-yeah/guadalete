@@ -1,4 +1,4 @@
-(ns guadalete.onyx.tasks.mixer
+(ns guadalete.onyx.tasks.color
     (:require
       [schema.core :as s]
       [onyx.schema :as os]
@@ -13,74 +13,69 @@
        [task :as task-config]
        ]))
 
-(defn add [& signal-values]
-      (reduce + signal-values))
 
-(defn multiply [& signal-values] (reduce * signal-values))
-
-(defn mix! [mixin-fn-key state segment]
-      (let [funktion (kw->fn mixin-fn-key)
-            values (map #(get % :value) (vals state))
-            mix (if (not-empty values)
-                  (apply funktion values)
-                  :empty)
-            timestamps (->> state (vals) (map #(get % :at)))
-            at (if (not-empty timestamps)
-                 (apply max timestamps)
-                 :never)]
-           (if (not= mix :empty)
-             ; return a tupe with the current segment first
-             ; it will be filtered again in the flow condition
-             ; this is necessart, since otherwise the state won't update
-             [segment {:value mix :at at :mixed true}]
-             ; return the segment and NOT an empty vector, as otherwise the state will never get initialized
-             ; strange, but what is one to do?
-             [segment])))
+(defn compose! [channel state segment]
+    (log/debug "compose!" channel segment state)
+     (assoc segment :channel channel))
 
 (defn inject-state
       [{:keys [onyx.core/windows-state onyx.core/params]} _lifecycle]
       (let [state (-> @windows-state (first) (get-in [:state 1]))]
            {:onyx.core/params (conj params state)}))
 
-(defn inject-mixin-fn
-      "Injects the mixin function (@see functions above)."
+(defn inject-channel
+      "Injects the color channel this signal controlls"
       [{:keys [onyx.core/task-map]} lifecycle]
-      {:onyx.core/params [(:mixin-fn task-map)]})
+      {:onyx.core/params [(:color/channel task-map)]})
 
 (def lifecycle-calls
   {:lifecycle/before-batch      inject-state
-   :lifecycle/before-task-start inject-mixin-fn})
+   :lifecycle/before-task-start inject-channel})
 
 (defn mixed? [event old {:keys [mixed]} all-new]
       (not (nil? mixed)))
 
-(s/defn signal-mixer
+(defn color-aggregation-fn-init [window]
+      {:h 0 :s 0 :v 0})
+
+(defn color-aggregation-fn [window state segment]
+      (log/debug "color-aggregation-fn | segment" segment )
+      segment)
+
+(defn color-super-aggregation [window state-1 state-2]
+      (into state-1 state-2))
+
+(defn color-aggregation-apply-log [window state v]
+      (let [{:keys [id data at mixed] :as segment} v]
+           (clojure.core/assoc state (keyword id) {:value data :at at})))
+
+(def color-aggregation
+  {:aggregation/init                 color-aggregation-fn-init
+   :aggregation/create-state-update  color-aggregation-fn
+   :aggregation/apply-state-update   color-aggregation-apply-log
+   :aggregation/super-aggregation-fn color-super-aggregation})
+
+
+(s/defn color
         [task-name :- s/Keyword
-         mixin-fn-name :- s/Str]
-        (let [mixin-fn (keyword "guadalete.onyx.tasks.mixer" mixin-fn-name)
-              window-id (keyword (name task-name) "window")
+        channel :- s/Keyword]
+        (let [window-id (keyword (name task-name) (str channel "-window"))
               task-map (merge
                          (onyx-defaults)
                          {:onyx/name           task-name
-                          :onyx/fn             ::mix!
+                          :onyx/fn             ::compose!
                           :onyx/type           :function
                           :onyx/uniqueness-key :at
-                          :onyx/doc            "Keeps track of incoming signals and their values and triggers the emission of merged maps."
-                          :mixin-fn            mixin-fn})
+                          :onyx/doc            "Keeps track of incoming signals on the input channels of the color and emmits a combined color-map"
+                          :color/channel       channel})
               window {:window/id          window-id
                       :window/task        task-name
                       :window/type        :global
-                      :window/aggregation :guadalete.onyx.windowing/map-latest
+                      :window/aggregation ::color-aggregation
                       :window/window-key  :at
                       :map-key            :id}
               lifecycles [{:lifecycle/task  task-name
                            :lifecycle/calls ::lifecycle-calls}]
-              ;trigger {:trigger/window-id         window-id
-              ;         :trigger/refinement        :onyx.refinements/accumulating
-              ;         :trigger/on                :onyx.triggers/segment
-              ;         :trigger/fire-all-extents? true
-              ;         :trigger/threshold         [1 :element]
-              ;         :trigger/sync              ::dump-window!}
 
               flow-conditions [{:flow/from           task-name
                                 :flow/to             :all
@@ -89,15 +84,12 @@
                                 :flow/short-circuit? true
                                 :flow/doc            "Emits segment iff it is a mixed signal"}]
 
-
               task {:task   {:task-map        task-map
                              :windows         [window]
-                             :triggers        []
                              :lifecycles      lifecycles
                              :flow-conditions flow-conditions}
                     :schema {:task-map        os/TaskMap
                              :windows         [os/Window]
-                             :triggers        [os/Trigger]
                              :lifecycles      [os/Lifecycle]
                              :flow-conditions [os/FlowCondition]}}]
              task))
