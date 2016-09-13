@@ -129,6 +129,7 @@
                                                          ports)))
                     component))
            (stop [component]
+                 (info "Stopping BookKeeper")
                  (if (arg-or-default :onyx.bookkeeper/server? env-config)
                    (doseq [server (:servers component)]
                           (component/stop server)))))

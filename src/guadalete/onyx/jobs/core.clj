@@ -16,6 +16,7 @@
       [guadalete.schema.core :as gs]))
 
 (defn- make-graph [graph-description]
+       (log/debug "graph-description" (pretty graph-description))
        (let [graph (->
                      (uber/digraph)
                      (uber/add-nodes-with-attrs* (->> (:nodes graph-description)
@@ -40,4 +41,6 @@
               signal-value (base-jobs/signal-timeseries-consumer)
               all-jobs (conj graph-jobs signal-value signal-config)
               ]
-             all-jobs)))
+             all-jobs
+             ;()
+             )))

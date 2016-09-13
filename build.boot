@@ -21,6 +21,7 @@
                   [com.taoensso/carmine "2.12.2"]
                   [com.taoensso/timbre "4.3.1"]
                   [thi.ng/math "0.2.1"]
+                  [clojurewerkz/statistiker "0.1.0-SNAPSHOT"]
                   [ubergraph "0.2.3"]
                   [forecast-clojure "1.0.3"]
                   [net.eliosoft/artnet4j "0001"]

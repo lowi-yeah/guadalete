@@ -25,6 +25,9 @@
 ;;
 ;; 1. Make the node descriptions [id attribute-map]
 
+(defn make-id
+      [item-id link-id]
+      (keyword (str item-id "-" link-id)))
 
 (defn- no-links?
        "Returns true if the node has no links in the given direction."
@@ -61,14 +64,14 @@
          item]
         (->> (:links node)
              (filter outlet?)
-             (map (fn [link] {:id (keyword (:id item) (:id link))}))))
+             (map (fn [link] {:id (make-id (:id item) (:id link))}))))
 
 (s/defn ^:always-validate inlets
         [node :- gs/Node
          item]
         (->> (:links node)
              (filter inlet?)
-             (map (fn [link] {:id (keyword (:id item) (:id link))}))))
+             (map (fn [link] {:id (make-id (:id item) (:id link))}))))
 
 (s/defn node-description
         "Creates node description for the 'inner' graph-node.
@@ -76,7 +79,7 @@
         [node :- gs/Node
          link-id :- s/Str
          item]
-        (let [id (keyword (:id item) link-id)
+        (let [id (make-id (:id item) link-id)
               type (keyword (name (:ilk node)) (name link-id))
               attributes (attributes-for-type type node item)]
              {:id    id
@@ -115,11 +118,6 @@
               nodes (->>
                       (conj bn in)
                       (filter #(not (nil? %))))]
-             ;(log/debug "dissect-node" node item)
-             ;(log/debug "\t node" node)
-             ;(log/debug "\t item" item)
-             ;(log/debug "\n nodes " (pretty nodes))
-             ;(log/debug "****")
              nodes))
 
 (s/defn ^:always-validate load-item
@@ -180,8 +178,8 @@
 
 (s/defn ^:always-validate flow-edges
         [{:keys [from to]} :- gs/FlowReference]
-        {:from (keyword (:item-id from) (:id from))
-         :to   (keyword (:item-id to) (:id to))})
+        {:from (make-id (:item-id from) (:id from))
+         :to   (make-id (:item-id to) (:id to))})
 
 (s/defn ^:always-validate assemble-edges
         [flows :- [gs/FlowReference]

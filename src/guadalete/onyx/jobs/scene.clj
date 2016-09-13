@@ -17,16 +17,20 @@
 (s/defn make-task :- os/TaskMap
         [graph
          node-id :- s/Keyword]
-        (log/debug "make-task" make-task)
+        ;(log/debug "make-task" node-id)
         (let [attrs (uber/attrs graph node-id)
+              ;_ (log/debug "/t attrs" attrs)
               fn-symbol (symbol (namespace (:task attrs)) (name (:task attrs)))
+              ;_ (log/debug "/t fn-symbol" fn-symbol)
               function (resolve fn-symbol)
+              ;_ (log/debug "/t function" function)
               task-map (function attrs)
               ]
              ;(log/debug "task-map" node-id "\n\t" task-map)
              ;(validate! os/TaskMap task-map)
              ;(validate! gs/TaskDescription task-map)
-             task-map))
+             task-map
+             ))
 
 
 (s/defn make-flow-condition :- [os/FlowCondition]
@@ -78,7 +82,6 @@
 (s/defn make-job-from-graph :- os/Job
         [{:keys [scene-id graph]}]
 
-        (Thread/sleep 800)
         (log/debug "**** make-job-from-graph")
         (uber/pprint graph)
         (let [topological-ordering (alg/topsort graph)

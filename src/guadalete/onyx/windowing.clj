@@ -16,7 +16,7 @@
 
 (defn latest-aggregation-apply-log [window state v]
       (let [{:keys [id data at mixed] :as segment} v]
-           (clojure.core/assoc state (keyword id) {:value data :at at})))
+           (clojure.core/assoc state (keyword id) {:data data :at at})))
 
 (def map-latest
   {:aggregation/init                 latest-aggregation-fn-init

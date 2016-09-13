@@ -9,46 +9,9 @@
       [guadalete.config
        [onyx :refer [onyx-defaults]]
        [kafka :as kafka-config]
-       [task :as task-config]
-       ]
-      ))
+       [task :as task-config]]
 
-
-;(s/defn input-task
-;        [task-name :- s/Keyword
-;         {:keys [task-opts lifecycle-opts] :as opts}]
-;
-;        (log/debug "input- kafka task options" task-opts)
-;
-;        {:task   {:task-map   (merge {:onyx/name   task-name
-;                                      :onyx/plugin :onyx.plugin.kafka/read-messages
-;                                      :onyx/type   :input
-;                                      :onyx/medium :kafka
-;                                      :onyx/doc    "Reads messages from a Kafka topic"}
-;                                     task-opts)
-;                  :lifecycles [(merge
-;                                 {:lifecycle/task  task-name
-;                                  :lifecycle/calls :onyx.plugin.kafka/read-messages-calls}
-;                                 lifecycle-opts)]}
-;         :schema {:task-map   (merge os/TaskMap KafkaInputTask)
-;                  :lifecycles [os/Lifecycle]}})
-;
-;(s/defn output-task
-;        [task-name :- s/Keyword
-;         {:keys [task-opts lifecycle-opts] :as opts}]
-;        (log/debug "output- kafka task options" task-opts)
-;
-;        {:task   {:task-map   (merge {:onyx/name   task-name
-;                                      :onyx/plugin :onyx.plugin.kafka/write-messages
-;                                      :onyx/type   :output
-;                                      :onyx/medium :kafka
-;                                      :onyx/doc    "Writes messages to a Kafka topic"}
-;                                     task-opts)
-;                  :lifecycles [(merge {:lifecycle/task  task-name
-;                                       :lifecycle/calls :onyx.plugin.kafka/write-messages-calls}
-;                                      lifecycle-opts)]}
-;         :schema {:task-map   (merge os/TaskMap KafkaOutputTask)
-;                  :lifecycles [os/Lifecycle]}})
+      [guadalete.utils.util :refer [pretty validate!]]))
 
 (defn- consumer
        "Helper for creating task that consume kafka messages."
@@ -65,18 +28,22 @@
                                 :kafka/group-id group-id})
                  :lifecycles [{:lifecycle/task  task-name
                                :lifecycle/calls :onyx.plugin.kafka/read-messages-calls}]}
-
         :schema {:task-map   os/TaskMap
-                 :lifecycles [os/Lifecycle]}}
-       )
+                 :lifecycles [os/Lifecycle]}})
 
 (defn- filtered-consumer
        "Helper for creating task that consume kafka messages."
        [{:keys [task-name signal-id] :as options}]
        (let [c (consumer options)
-             filter-lifecycle {:lifecycle/task  task-name
-                               :lifecycle/calls :onyx.plugin.kafka/read-messages-calls}]
-            (assoc-in c [:task :task-map :filter/signal-id] signal-id)))
+             flow-conditions [{:flow/from           task-name
+                               :flow/to             :all
+                               :flow/predicate      :guadalete.onyx.filters/signal-id
+                               :flow/short-circuit? true}]
+             consumer* (-> c
+                           (assoc-in [:task :task-map :filter/signal-id] signal-id)
+                           (assoc-in [:task :flow-conditions] flow-conditions)
+                           (assoc-in [:schema :flow-conditions] [os/FlowCondition]))]
+            consumer*))
 
 
 (s/defn signal-value-consumer

@@ -16,18 +16,18 @@
                           :onyx.log/config                       (env/get-value :onyx.log/config)
                           :onyx.messaging.aeron/embedded-driver? (env/get-bool :onyx.messaging.aeron/embedded-driver?)
                           :onyx/tenancy-id                       tenancy-id}
-            :env-config  {:zookeeper/server?                  false
-                          :zookeeper/address                  (env/get-value :zookeeper/address)
-                          :onyx.bookkeeper/server?            true
-                          :onyx.bookkeeper/delete-server-data?  true
-                          :onyx.bookkeeper/local-quorum?      true
-                          :onyx.bookkeeper/local-quorum-ports [48041 48042 48043]
-                          :onyx.bookkeeper/base-journal-dir   "/Volumes/lowipro120/guadalete/bookkeeper/journal"
-                          :onyx.bookkeeper/base-ledger-dir    "/Volumes/lowipro120/guadalete/bookkeeper/ledger"
+            :env-config  {:zookeeper/server?                   false
+                          :zookeeper/address                   (env/get-value :zookeeper/address)
+                          :onyx.bookkeeper/server?             true
+                          :onyx.bookkeeper/delete-server-data? true
+                          :onyx.bookkeeper/local-quorum?       true
+                          :onyx.bookkeeper/local-quorum-ports  [48071 48072 48073]
+                          :onyx.bookkeeper/base-journal-dir    "/Volumes/lowipro120/guadalete/bookkeeper/journal"
+                          :onyx.bookkeeper/base-ledger-dir     "/Volumes/lowipro120/guadalete/bookkeeper/ledger"
                           ;:onyx.bookkeeper/zk-ledgers-root-path "/ledgers"
-                          :onyx/tenancy-id                    tenancy-id}}))
+                          :onyx/tenancy-id                     tenancy-id}}))
 
-(def onyx-batch* {:batch-size 10 :batch-timeout 1000})
+(def onyx-batch* {:batch-size 1 :batch-timeout 100})
 
 (defn onyx-batch []
       {:onyx/batch-size    (:batch-size onyx-batch*)
