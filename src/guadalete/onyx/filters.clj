@@ -10,7 +10,6 @@
        [kafka :refer [kafka-topic]]]
 
       [guadalete.onyx.tasks
-       [core :refer [ident]]
        [redis :as redis-tasks]
        [kafka :as kafka-tasks]
        [async :as async-tasks]

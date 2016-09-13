@@ -11,6 +11,10 @@
                      :y s/Num}
                :else [s/Num]))
 
+(s/defschema Map
+             {s/Keyword s/Any})
+
+
 ;//   _ _      _
 ;//  | (_)_ _ | |_____
 ;//  | | | ' \| / (_-<
@@ -23,9 +27,10 @@
 (def LinkReference
   "A reference for looking up a Link"
   (s/conditional keyword? (s/eq :mouse)
-                 :else {:scene-id s/Str
-                        :node-id  s/Str
-                        :id       s/Str}))
+                 :else {:scene-id                 s/Str
+                        :node-id                  s/Str
+                        :id                       s/Str
+                        (s/optional-key :item-id) s/Str}))
 
 ;; IN
 ;; ********************************
@@ -185,7 +190,6 @@
 (s/defschema Scenes
              {s/Str Scene})
 
-
 (s/defschema Signal
              {:name      s/Str
               :type      s/Str
@@ -209,6 +213,28 @@
 
 (s/defschema Mixers
              {s/Str Mixer})
+
+(s/defschema Items
+             {:light  [Light]
+              :mixer  [Mixer]
+              :signal [Signal]
+              :color  [Color]})
+
+
+;//                      _
+;//   __ _ _ _ __ _ _ __| |_
+;//  / _` | '_/ _` | '_ \ ' \
+;//  \__, |_| \__,_| .__/_||_|
+;//  |___/         |_|
+(s/defschema EdgeDescription
+             {:from                   s/Keyword
+              :to                     s/Keyword
+              (s/optional-key :attrs) Map})
+
+(s/defschema NodeDescription
+             {:id                     s/Keyword
+              (s/optional-key :attrs) Map})
+
 
 ;//                     _
 ;//   __ ___ ___ _ _ ____)___ _ _

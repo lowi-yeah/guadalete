@@ -1,8 +1,7 @@
-(ns guadalete.onyx.tasks.core
+(ns guadalete.onyx.tasks.identity
     (:require
       [schema.core :as s]
       [onyx.schema :as os]
-      [guadalete.schema.onyx :refer [KafkaInputTask]]
       [taoensso.timbre :as log]
       [guadalete.onyx.tasks.util]
 
@@ -14,7 +13,7 @@
       ))
 
 
-(s/defn ident
+(s/defn identity-task
         "Identitiy function task used to anchor lifecycle hooks"
         ([task-name :- s/Keyword]
           {:task   {:task-map (merge

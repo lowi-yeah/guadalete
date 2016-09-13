@@ -6,12 +6,24 @@
       [guadalete.onyx.jobs.base :as base-jobs]
       [guadalete.onyx.jobs.development :as dev-jobs]
       [taoensso.timbre :as log]
-      [guadalete.datastructures.graph :as graph]
       [guadalete.datastructures.flow :as flow]
       [guadalete.utils.util :refer [pretty validate!]]
+
+      [ubergraph.core :as uber]
+      [ubergraph.alg :as alg]
+
       [schema.core :as s]
       [guadalete.schema.core :as gs]))
 
+(defn- make-graph [graph-description]
+       (let [graph (->
+                     (uber/digraph)
+                     (uber/add-nodes-with-attrs* (->> (:nodes graph-description)
+                                                      (map (fn [n] [(:id n) (:attrs n)]))))
+                     (uber/add-edges* (->> (:edges graph-description)
+                                           (map (fn [e] [(:from e) (:to e) (:attrs e)])))))]
+            {:scene-id (keyword (:scene-id graph-description))
+             :graph    graph}))
 
 (defn make-jobs
       [{:keys [rethinkdb]}]
@@ -21,24 +33,11 @@
         (let [
               scenes (db/all-scenes db-conn)
               items (db/all-items db-conn)
-
-              mapp (-> scenes
-                       (flow/assemble items)
-                       (flow/transform)
-                       )
-              ;graph-map (graph/make-graphs flow-map)
-
-              ;_ (log/debug "graph-map" graph-map)
-
-              ;graph-jobs (scene-jobs/from-graphs graph-map)
-              ;signal-config (base-jobs/signal-config-consumer)
-              ;signal-value (base-jobs/signal-timeseries-consumer)
-              ;all-jobs (conj () signal-value signal-config)
-              all-jobs ()
+              graph-jobs (->> (flow/assemble scenes items)
+                              (map make-graph)
+                              (scene-jobs/from-graphs))
+              signal-config (base-jobs/signal-config-consumer)
+              signal-value (base-jobs/signal-timeseries-consumer)
+              all-jobs (conj graph-jobs signal-value signal-config)
               ]
-
-             ;(log/debug "all-jobs" (pretty all-jobs))
-             ;(log/debug "graph-jobs" (pretty graph-jobs))
-             all-jobs
-             ))
-      )
+             all-jobs)))

@@ -32,12 +32,12 @@
                        ;//  |_|_||_|_| |_| \__,_/__/\__|_|  \_,_\__|\__|\_,_|_| \___|
                        ; these are the base systems required for running guadalete.
                        :rethinkdb (new-rethinkdb (config/rethinkdb))
-                       ;:zookeeper (zookeeper (:env-config (config/onyx)))
-                       ;:bookkeeper (component/using (multi-bookie-server (:env-config (config/onyx))) [:zookeeper])
-                       ;:kafka (new-kafka (config/kafka))
-                       ;:mqtt (new-mqtt (config/mqtt))
-                       ;:mqtt-kafkabridge (component/using (mqtt-kafka-bridge) [:kafka :mqtt])
-                       ;:onyx (onyx (config/onyx))
+                       :zookeeper (zookeeper (:env-config (config/onyx)))
+                       :bookkeeper (component/using (multi-bookie-server (:env-config (config/onyx))) [:zookeeper])
+                       :kafka (new-kafka (config/kafka))
+                       :mqtt (new-mqtt (config/mqtt))
+                       :mqtt-kafkabridge (component/using (mqtt-kafka-bridge) [:kafka :mqtt])
+                       :onyx (onyx (config/onyx))
 
                        ;//     _     _
                        ;//    (_)___| |__ ___
@@ -45,8 +45,8 @@
                        ;//   _/ \___/_.__/__/
                        ;//  |__/
                        ; the jobs run by onyx
-                       ;:job-runner (component/using (job-runner) [:onyx :kafka :mqtt :rethinkdb])
-                       :job-runner (component/using (job-runner) [:rethinkdb])
+                       :job-runner (component/using (job-runner) [:onyx :kafka :mqtt :rethinkdb])
+                       ;:job-runner (component/using (job-runner) [:rethinkdb])
                        ])
 
 (defsystem prod-system

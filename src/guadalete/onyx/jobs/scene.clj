@@ -6,17 +6,27 @@
 
       [schema.core :as s]
       [onyx.schema :as os]
+      [guadalete.schema.core :as gs]
+
       [guadalete.onyx.tasks.scene :refer [node-task]]
       [guadalete.onyx.jobs.util :refer [empty-job add-task add-tasks add-flow-conditions]]
-
+      [guadalete.config.graph :as graph-config]
       [guadalete.utils.util :refer [pretty validate!]]))
 
 
-(s/defn make-task
+(s/defn make-task :- os/TaskMap
         [graph
          node-id :- s/Keyword]
-        (let [{:keys [task-type] :as attrs} (uber/attrs graph node-id)]
-             (node-task task-type node-id attrs)))
+        (log/debug "make-task" make-task)
+        (let [attrs (uber/attrs graph node-id)
+              fn-symbol (symbol (namespace (:task attrs)) (name (:task attrs)))
+              function (resolve fn-symbol)
+              task-map (function attrs)
+              ]
+             ;(log/debug "task-map" node-id "\n\t" task-map)
+             ;(validate! os/TaskMap task-map)
+             ;(validate! gs/TaskDescription task-map)
+             task-map))
 
 
 (s/defn make-flow-condition :- [os/FlowCondition]
@@ -33,15 +43,14 @@
         "Recursive helper for creating the task catalog of a scene-graph-job."
         [graph
          nodes :- [s/Keyword]
-         flows :- os/Workflow
          catalog]
         (if (empty? nodes)
-          catalog
+          (do
+            catalog)
           (let [[head & tail] nodes
                 task (make-task graph head)
-                catalog* (conj catalog task)
-                ]
-               (build-catalog* graph tail flows catalog*))))
+                catalog* (conj catalog task)]
+               (build-catalog* graph tail catalog*))))
 
 (s/defn build-flow-conditions*
         ;(s/defn ^:always-validate build-catalog*
@@ -55,3 +64,45 @@
                 flow-condition (make-flow-condition graph head)
                 result* (conj result flow-condition)]
                (build-flow-conditions* graph tail result*))))
+
+(defn- make-flows
+       "Internal helper for creating the flows of a job.
+       It's easy as… Just get the edges of the graph represented as two-dimensional vectors [:src :dest]"
+       [graph]
+       (->>
+         graph
+         (uber/edges)
+         (map (fn [e] [(:src e) (:dest e)]))
+         (into [])))
+
+(s/defn make-job-from-graph :- os/Job
+        [{:keys [scene-id graph]}]
+
+        (Thread/sleep 800)
+        (log/debug "**** make-job-from-graph")
+        (uber/pprint graph)
+        (let [topological-ordering (alg/topsort graph)
+              catalog (build-catalog* graph topological-ordering [])
+              ;_ (log/debug "catalog" (->> catalog
+              ;                            (map #(get % :task))
+              ;                            (into [])
+              ;                            (pretty)))
+
+              flows (make-flows graph)
+              ;_ (log/debug "flows" (->> flows (pretty)))
+
+              ;flow-conditions (build-flow-conditions* graph (uber/edges graph) [])
+              ;_ (log/debug "flow-conditions" (into [] flow-conditions))
+
+              job (-> empty-job
+                      (add-tasks catalog)
+                      ;(add-flow-conditions flow-conditions)
+                      (assoc :workflow flows))]
+             {:name scene-id
+              :job  job}))
+
+(s/defn from-graphs
+        [graphs]
+        (->> graphs
+             (map make-job-from-graph)
+             (into [])))

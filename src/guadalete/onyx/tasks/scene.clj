@@ -6,7 +6,8 @@
       [guadalete.onyx.tasks.kafka :as kafka-tasks]
       [guadalete.onyx.tasks.mixer :as mixer-tasks]
       [guadalete.onyx.tasks.color :as color-tasks]
-      [guadalete.config.onyx :refer [onyx-defaults]] [guadalete.onyx.tasks.async :as async-tasks]))
+      [guadalete.config.onyx :refer [onyx-defaults]]
+      [guadalete.onyx.tasks.async :as async-tasks]))
 
 
 ;//   _        _
@@ -19,9 +20,6 @@
       ;(log/debug "segment" segment)
       segment)
 
-(defn log-color [segment]
-      (log/debug "color" segment)
-      segment)
 
 (defn- color-task [task-name]
        (let [task {:task   {:task-map (merge
@@ -62,7 +60,7 @@
 ;//  |_||_\___\__,_\___|    \__\__,_/__/_\_\
 ;//
 (defmulti node-task
-          (fn [task-type _id _attrs] task-type))
+          (fn [{:keys [type]}] type))
 
 (defmethod node-task :kafka/signals [_type id attrs]
            (kafka-tasks/signal-value-consumer
@@ -70,16 +68,16 @@
              (str (namespace id) "-" (name id))
              (:signal-id attrs)))
 
-(defmethod node-task :identity [_type id attrs]
-           ;(identity-task id)
-           (identity-log-task id))
-
-(defmethod node-task :mixer/node [_type id {:keys [mix-fn] :as attrs}]
-           (mixer-tasks/signal-mixer id mix-fn))
-
-(defmethod node-task :color/node [_type id {:keys [type]}]
-           (color-tasks/color id (keyword type)))
-
-(defmethod node-task :light/node [_type id attrs]
-           (async-tasks/output id {:task-opts (onyx-defaults) :lifecycle-opts {:id id}}))
-
+;(defmethod node-task :identity [_type id attrs]
+;           ;(identity-task id)
+;           (identity-log-task id))
+;
+;(defmethod node-task :mixer/node [_type id {:keys [mix-fn] :as attrs}]
+;           (mixer-tasks/signal-mixer id mix-fn))
+;
+;(defmethod node-task :color/node [_type id {:keys [type]}]
+;           (color-tasks/color id (keyword type)))
+;
+;(defmethod node-task :light/node [_type id attrs]
+;           (async-tasks/output id {:task-opts (onyx-defaults) :lifecycle-opts {:id id}}))
+;

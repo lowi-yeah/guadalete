@@ -124,11 +124,12 @@
 
                        (initialize-origin! conn config onyx-id)
                        (assoc component :conn conn :prefix onyx-id :kill-ch kill-ch)))
-
            (stop [component]
                  (taoensso.timbre/info "Stopping ZooKeeper")
-                 (zk/close (:conn component))
-                 (close! (:kill-ch component))
+                 (if (:conn component)
+                   (zk/close (:conn component)))
+                 (if (:kill-ch component)
+                   (close! (:kill-ch component)))
                  component))
 ;
 ;(defmethod clojure.core/print-method ZooKeeper

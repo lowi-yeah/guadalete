@@ -1,296 +1,92 @@
-{
-  "fix": [
-    {
-      "id": "1c64621d-d09e-4d49-be4c-1b6cfa4040fb",
-      "from": {
-        "id": "mix-8436d70f-bb0f-4bd7-83ca-eb92a8adf96f",
-        "ilk": "mixer",
-        "position": {
-          "x": 252,
-          "y": 65
-        },
-        "links": [
-          {
-            "index": 0,
-            "name": "first",
-            "id": "in-0",
-            "accepts": "value",
-            "direction": "in"
-          },
-          {
-            "index": 1,
-            "name": "second",
-            "id": "in-1",
-            "accepts": "value",
-            "direction": "in"
-          },
-          {
-            "id": "out",
-            "emits": "value",
-            "direction": "out",
-            "index": 2,
-            "name": "out"
-          }
-        ],
-        "item": [
-          {
-            "id": "8436d70f-bb0f-4bd7-83ca-eb92a8adf96f",
-            "mixin-fn": "avg"
-          }
-        ]
-      },
-      "to": {
-        "id": "clr-4bba1d7e-3247-430c-9ec3-32d1d99b6050",
-        "ilk": "color",
-        "position": {
-          "x": 460,
-          "y": 95
-        },
-        "links": [
-          {
-            "index": 0,
-            "name": "brightness",
-            "id": "brightness",
-            "accepts": "value",
-            "direction": "in"
-          },
-          {
-            "id": "out",
-            "emits": "color",
-            "direction": "out",
-            "index": 1,
-            "name": "out"
-          }
-        ],
-        "item": [
-          {
-            "id": "4bba1d7e-3247-430c-9ec3-32d1d99b6050",
-            "color-type": "v",
-            "brightness": 0
-          }
-        ]
-      }
+[
+  {
+    "task-map": {
+      "kafka/zookeeper": "zookeeper1:2181",
+      "onyx/plugin": "onyx.plugin.kafka/read-messages",
+      "filter/signal-id": "quicksine",
+      "onyx/medium": "kafka",
+      "kafka/offset-reset": "largest",
+      "kafka/force-reset?": true,
+      "onyx/batch-timeout": 1000,
+      "onyx/type": "input",
+      "onyx/name": "quicksine/out",
+      "kafka/topic": "gdlt-sgnl-v",
+      "kafka/group-id": "sgnl-fe4d4bb8-22c1-44eb-8e5f-80b5e21168bb",
+      "onyx/max-peers": 1,
+      "onyx/min-peers": 1,
+      "onyx/doc": "Consumes gdlt-sgnl-v messages from Kafka",
+      "kafka/empty-read-back-off": 50,
+      "kafka/fetch-size": 307200,
+      "onyx/batch-size": 10,
+      "kafka/deserializer-fn": "guadalete.onyx.tasks.util/deserialize-message-json",
+      "kafka/wrap-with-metadata?": false,
+      "kafka/commit-interval": 50,
+      "kafka/chan-capacity": 100
     },
-    {
-      "id": "64012de9-539a-4da8-b956-cb765dc34d58",
-      "from": {
-        "id": "clr-4bba1d7e-3247-430c-9ec3-32d1d99b6050",
-        "ilk": "color",
-        "position": {
-          "x": 460,
-          "y": 95
-        },
-        "links": [
-          {
-            "index": 0,
-            "name": "brightness",
-            "id": "brightness",
-            "accepts": "value",
-            "direction": "in"
-          },
-          {
-            "id": "out",
-            "emits": "color",
-            "direction": "out",
-            "index": 1,
-            "name": "out"
-          }
-        ],
-        "item": [
-          {
-            "id": "4bba1d7e-3247-430c-9ec3-32d1d99b6050",
-            "color-type": "v",
-            "brightness": 0
-          }
-        ]
-      },
-      "to": {
-        "id": "lght-c2cae74e-e7b4-476c-b88b-4dbe3e1b0bae",
-        "ilk": "light",
-        "position": {
-          "x": 664,
-          "y": 134
-        },
-        "links": [
-          {
-            "id": "in",
-            "accepts": "color",
-            "direction": "in",
-            "index": 0
-          }
-        ],
-        "item": [
-          {
-            "room-id": "w00t",
-            "id": "c2cae74e-e7b4-476c-b88b-4dbe3e1b0bae",
-            "name": "Isidore Doggersby",
-            "num-channels": 1,
-            "channels": [
-              [
-                1
-              ]
-            ],
-            "color": {
-              "brightness": 0,
-              "saturation": 0,
-              "hue": 0
-            },
-            "transport": "dmx"
-          }
-        ]
+    "lifecycles": [
+      {
+        "lifecycle/task": "quicksine/out",
+        "lifecycle/calls": "onyx.plugin.kafka/read-messages-calls"
       }
-    },
-    {
-      "id": "8caac1fa-84da-4197-aeed-f89ecae9a190",
-      "from": {
-        "id": "sgnl-e3b753c1-6909-4b46-b7bc-2b9e08e489bc",
-        "ilk": "signal",
-        "position": {
-          "x": 77,
-          "y": 117
-        },
-        "links": [
-          {
-            "id": "out",
-            "emits": "value",
-            "direction": "out",
-            "index": 0
-          }
-        ],
-        "item": [
-          {
-            "name": "quicksine",
-            "type": "analog",
-            "id": "quicksine",
-            "accepted?": false
-          },
-          {
-            "name": "sine",
-            "type": "analog",
-            "id": "sine",
-            "accepted?": false
-          },
-          {
-            "name": "slowsine",
-            "type": "analog",
-            "id": "slowsine",
-            "accepted?": false
-          }
-        ]
-      },
-      "to": {
-        "id": "mix-8436d70f-bb0f-4bd7-83ca-eb92a8adf96f",
-        "ilk": "mixer",
-        "position": {
-          "x": 252,
-          "y": 65
-        },
-        "links": [
-          {
-            "index": 0,
-            "name": "first",
-            "id": "in-0",
-            "accepts": "value",
-            "direction": "in"
-          },
-          {
-            "index": 1,
-            "name": "second",
-            "id": "in-1",
-            "accepts": "value",
-            "direction": "in"
-          },
-          {
-            "id": "out",
-            "emits": "value",
-            "direction": "out",
-            "index": 2,
-            "name": "out"
-          }
-        ],
-        "item": [
-          {
-            "id": "8436d70f-bb0f-4bd7-83ca-eb92a8adf96f",
-            "mixin-fn": "avg"
-          }
-        ]
-      }
-    },
-    {
-      "id": "934ef141-5fc6-4ce3-94c6-da975cdd0429",
-      "from": {
-        "id": "sgnl-db6db2d4-5c0b-407f-8c2e-6b09fedb072a",
-        "ilk": "signal",
-        "position": {
-          "x": 33,
-          "y": 13
-        },
-        "links": [
-          {
-            "id": "out",
-            "emits": "value",
-            "direction": "out",
-            "index": 0
-          }
-        ],
-        "item": [
-          {
-            "name": "quicksine",
-            "type": "analog",
-            "id": "quicksine",
-            "accepted?": false
-          },
-          {
-            "name": "sine",
-            "type": "analog",
-            "id": "sine",
-            "accepted?": false
-          },
-          {
-            "name": "slowsine",
-            "type": "analog",
-            "id": "slowsine",
-            "accepted?": false
-          }
-        ]
-      },
-      "to": {
-        "id": "mix-8436d70f-bb0f-4bd7-83ca-eb92a8adf96f",
-        "ilk": "mixer",
-        "position": {
-          "x": 252,
-          "y": 65
-        },
-        "links": [
-          {
-            "index": 0,
-            "name": "first",
-            "id": "in-0",
-            "accepts": "value",
-            "direction": "in"
-          },
-          {
-            "index": 1,
-            "name": "second",
-            "id": "in-1",
-            "accepts": "value",
-            "direction": "in"
-          },
-          {
-            "id": "out",
-            "emits": "value",
-            "direction": "out",
-            "index": 2,
-            "name": "out"
-          }
-        ],
-        "item": [
-          {
-            "id": "8436d70f-bb0f-4bd7-83ca-eb92a8adf96f",
-            "mixin-fn": "avg"
-          }
-        ]
-      }
+    ]
+  },
+  {
+    "task-map": {
+      "onyx/fn": "guadalete.onyx.tasks.items.color/log-color",
+      "onyx/uniqueness-key": "at",
+      "onyx/batch-timeout": 1000,
+      "onyx/type": "function",
+      "onyx/name": "4a39db00-55c4-4f4f-937f-255b64af07ee/brightness",
+      "onyx/max-peers": 1,
+      "onyx/min-peers": 1,
+      "color/channel": "brightness",
+      "onyx/doc": "Logs the color to the console for debugging",
+      "onyx/batch-size": 10
     }
-  ]
-}
+  },
+  {
+    "task-map": {
+      "onyx/min-peers": 1,
+      "onyx/max-peers": 1,
+      "onyx/batch-size": 10,
+      "onyx/batch-timeout": 1000,
+      "onyx/name": "4a39db00-55c4-4f4f-937f-255b64af07ee/inner",
+      "onyx/fn": "clojure.core/identity",
+      "onyx/type": "function"
+    }
+  },
+  {
+    "task-map": {
+      "onyx/min-peers": 1,
+      "onyx/max-peers": 1,
+      "onyx/batch-size": 10,
+      "onyx/batch-timeout": 1000,
+      "onyx/name": "4a39db00-55c4-4f4f-937f-255b64af07ee/out",
+      "onyx/fn": "clojure.core/identity",
+      "onyx/type": "function"
+    }
+  },
+  {
+    "task-map": {
+      "onyx/min-peers": 1,
+      "onyx/max-peers": 1,
+      "onyx/batch-size": 10,
+      "onyx/batch-timeout": 1000,
+      "onyx/name": "f106526c-d92a-4535-9b02-80dabf7d8a9e/in",
+      "onyx/plugin": "onyx.plugin.core-async/output",
+      "onyx/type": "output",
+      "onyx/medium": "core.async",
+      "onyx/doc": "Publishes segments to core.async"
+    },
+    "lifecycles": [
+      {
+        "lifecycle/task": "f106526c-d92a-4535-9b02-80dabf7d8a9e/in",
+        "lifecycle/calls": "guadalete.onyx.tasks.async/publish-calls"
+      },
+      {
+        "lifecycle/task": "f106526c-d92a-4535-9b02-80dabf7d8a9e/in",
+        "lifecycle/calls": "onyx.plugin.core-async/writer-calls"
+      }
+    ]
+  }
+]
