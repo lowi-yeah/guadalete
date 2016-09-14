@@ -67,3 +67,11 @@
           (consumer {:task-name task-name
                      :group-id  "signal-config-consumer"
                      :topic     :signal-config})))
+
+(s/defn light-config-consumer
+        "Task for consuming light configuration messages from kafka."
+        ([task-name :- s/Keyword]
+          (consumer {:task-name task-name
+                     :group-id  "light-config-consumer"
+                     :topic     :light-config})))
+

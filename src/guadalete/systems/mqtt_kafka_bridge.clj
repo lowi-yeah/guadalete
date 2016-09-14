@@ -20,19 +20,25 @@
 
 (defn- mqtt->kafka [mqtt-topic mqtt-payload]
        (let [[signal-type message-type id] (str/split mqtt-topic #"/")
-             message* (parse-string (String. mqtt-payload "UTF-8"))
-             kafka-topic (str kafka/prefix signal-type "-" message-type)]
+             kafka-topic (str kafka/prefix signal-type "-" message-type)
+             data (parse-string (String. mqtt-payload "UTF-8"))
+             message (condp = kafka-topic
+                            "gdlt-sgnl-v" {:data data
+                                           :id   id
+                                           :at   (now)}
+                            (-> data
+                                (assoc :id id)
+                                (assoc :at (now))))]
             {:topic   kafka-topic
              :key     id
-             :message {:data message*
-                       :id   id
-                       :at   (now)}}))
+             :message message}))
 
 (defn- dispatch! [kafka-producer ^String mqtt-topic _ ^bytes mqtt-payload]
        (let [{:keys [topic key message]} (mqtt->kafka mqtt-topic mqtt-payload)
              r (record topic key (-> message (generate-string)))]
-            ;(log/debug r)
-            (send kafka-producer r)))
+            (log/debug r)
+            (send kafka-producer r)
+            ))
 
 (defrecord MqttKafkaBridge [kafka mqtt]
            component/Lifecycle

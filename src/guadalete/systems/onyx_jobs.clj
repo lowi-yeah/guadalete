@@ -36,7 +36,6 @@
                                            ;:kafka     kafka
                                            ;:mqtt      mqtt
                                            })
-                          _ (log/debug "jobs" jobs)
                           job-ids (start-jobs peer-config jobs)
                           ]
                          (assoc component :job-ids job-ids :peer-config peer-config))

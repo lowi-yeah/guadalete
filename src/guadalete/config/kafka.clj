@@ -14,6 +14,22 @@
                    :partitions         1
                    :replication-factor 1
                    :config             {"cleanup.policy" "compact"}}
+
+   :light-value   {:name               (str prefix "lght-v")
+                   :partitions         1
+                   :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}
+
+   :light-config  {:name               (str prefix "lght-c")
+                   :partitions         1
+                   :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}
+
+   :light-out     {:name               (str prefix "lght-o")
+                   :partitions         1
+                   :replication-factor 1
+                   :config             {"cleanup.policy" "compact"}}
+
    :switch-value  {:name               (str prefix "swtch-v")
                    :partitions         1
                    :replication-factor 1
@@ -22,15 +38,12 @@
                    :partitions         1
                    :replication-factor 1
                    :config             {"cleanup.policy" "compact"}}
+
    :artnet        {:name               (str prefix "artnet")
                    :partitions         1
                    :replication-factor 1
                    :config             {"cleanup.policy" "compact"}}
 
-   :light-value   {:name               (str prefix "lght-v")
-                   :partitions         1
-                   :replication-factor 1
-                   :config             {"cleanup.policy" "compact"}}
    :monitor       {:name               "kmf-topic"
                    :partitions         1
                    :replication-factor 1

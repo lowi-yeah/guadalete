@@ -44,9 +44,8 @@
                        ;//    | / _ \ '_ (_-<
                        ;//   _/ \___/_.__/__/
                        ;//  |__/
-                       ; the jobs run by onyx
+                       ;; the jobs run by onyx
                        :job-runner (component/using (job-runner) [:onyx :kafka :mqtt :rethinkdb])
-                       ;:job-runner (component/using (job-runner) [:rethinkdb])
                        ])
 
 (defsystem prod-system

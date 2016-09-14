@@ -162,16 +162,42 @@
 (s/defschema Rooms
              {s/Str s/Any})                                 ; map id->Room
 
+(s/defschema DMXLight
+             {:room-id   s/Str
+              :id        s/Str
+              :name      s/Str
+              :type      (s/enum :v :sv :hsv)
+              :channels  {:brightness                  [s/Num]
+                          (s/optional-key :saturation) [s/Num]
+                          (s/optional-key :hue)        [s/Num]}
+              :color     {:brightness                  s/Num
+                          (s/optional-key :saturation) s/Num
+                          (s/optional-key :hue)        s/Num}
+              :transport (s/eq :dmx)})
+
+(s/defschema MqttLightConfig
+             {:name s/Str
+              :type (s/enum "v" "sv" "hsv")
+              :id   s/Str
+              :at   s/Num})
+
+(s/defschema MqttLight
+             {(s/optional-key :room-id) s/Str
+              :id                       s/Str
+              :name                     s/Str
+              :type                     (s/enum :v :sv :hsv)
+              :transport                (s/eq :mqtt)
+              (s/optional-key :color)   {:brightness                  s/Num
+                                         (s/optional-key :saturation) s/Num
+                                         (s/optional-key :hue)        s/Num}})
+
 (s/defschema Light
-             {:room-id      s/Str
-              :id           s/Str
-              :name         s/Str
-              :num-channels s/Num
-              :channels     [[s/Num]]
-              :color        {:brightness                  s/Num
-                             (s/optional-key :saturation) s/Num
-                             (s/optional-key :hue)        s/Num}
-              :transport    (s/enum :dmx :mqtt)})
+             (s/conditional
+               #(or
+                 (= (:transport %) "mqtt")
+                 (= (:transport %) :mqtt))
+               MqttLight
+               :else DMXLight))
 
 (s/defschema Lights
              {s/Str Light})

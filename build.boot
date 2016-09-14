@@ -84,7 +84,9 @@
 (def mqtt-dev-config
   {:mqtt/broker "tcp://mosquitto1:1883"
    :mqtt/id     "guadalete-client"
-   :mqtt/topics {"sgnl/#" 0 "swtch/#" 0}})
+   :mqtt/topics {"sgnl/#"  0
+                 "swtch/#" 0
+                 "lght/#" 0}})
 
 (def forecast-dev-config
   {:forecast-key "6c6ff80d697e050eff942334032eaa97"})

@@ -53,10 +53,10 @@
             batch (:onyx.core/batch event)
             items
             (->> batch
-                 (map #(assoc (get-in % [:message :data]) :id (get-in % [:message :id])))
+                 (map #(assoc (get-in % [:message]) :id (get-in % [:message :id])))
                  (into []))]
            (when (not-empty items)
-                 ;(log/debug "upsert!" items)
+                 (log/debug "items" items)
                  (upsert! db-connection table items))
            {}))
 

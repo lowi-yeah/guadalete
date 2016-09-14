@@ -21,6 +21,7 @@
        [zookeeper-address topics]
        (with-open [zk (admin/zk-client zookeeper-address)]
                   (doseq [topic topics]
+                         (log/debug "kafka: bootstrapping topic" topic)
                          (if-not (admin/topic-exists? zk (:name topic))
                                  (do
                                    (admin/create-topic zk (:name topic)
@@ -32,8 +33,8 @@
            component/Lifecycle
            (start [component]
                   (log/info "**************** Starting Kafka component ***************")
-                  ;(log/debug "**** zookeeper-address" zookeeper-address)
-                  ;(log/debug "**** kafka-topics" kafka-topics)
+                  (log/debug "**** zookeeper-address" zookeeper-address)
+                  (log/debug "**** kafka-topics" kafka-topics)
                   (try
                     (bootstrap-topics zookeeper-address kafka-topics)
                     (let [brokers (-> {"zookeeper.connect" zookeeper-address}
