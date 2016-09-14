@@ -7,7 +7,7 @@
       [clj-uuid :as uuid]
       [onyx.peer.operation :refer [kw->fn]]
       [guadalete.config.onyx :refer [onyx-defaults]]
-      [guadalete.onyx.tasks.identity :refer [identity-task log-task]]))
+      [guadalete.onyx.tasks.identity :refer [identity-task log-task dissoc-task]]))
 
 (s/defn in
         [{:keys [name channel] :as attributes}]
@@ -20,11 +20,10 @@
             values (->> (vals state)
                         (map #(get % :data))
                         (into []))
-            mix (if (not-empty values)
+            mixed(if (not-empty values)
                   (apply funktion values)
                   0)]
-           ;(log/debug "state" state)
-           (assoc segment :mix mix)))
+           (assoc segment :value mixed)))
 
 (defn inject-state
       [{:keys [onyx.core/windows-state onyx.core/params]} _lifecycle]
@@ -54,7 +53,6 @@
                           :onyx/doc            "Mixes two colors according to the mixin-fn "
                           :mixer/fn            mixin-fn
                           })
-
               windows [{:window/id          window-id
                         :window/task        name
                         :window/type        :global
@@ -64,27 +62,20 @@
 
               lifecycles [{:lifecycle/task  name
                            :lifecycle/calls ::lifecycle-calls}]
-
-
-              task {:task   {:task-map        task-map
-                             :windows         windows
-                             :lifecycles      lifecycles
-                             }
-                    :schema {:task-map        os/TaskMap
-                             :windows         [os/Window]
-                             :lifecycles      [os/Lifecycle]
-                             }}]
+              task {:task   {:task-map   task-map
+                             :windows    windows
+                             :lifecycles lifecycles}
+                    :schema {:task-map   os/TaskMap
+                             :windows    [os/Window]
+                             :lifecycles [os/Lifecycle]}}]
              task))
-
 
 
 (defn out
       "Returns the task to be excuted by the out-node of a mixer.
       By now it does nothing…"
       [{:keys [name]}]
-      ;(log-task name "mixer/out")
-      ;(identity-task name)
-      (log-task name "mixer/out"))
+      (dissoc-task name [:id :data]))
 
 ;//         _     _         __              _   _
 ;//   _ __ (_)_ ___)_ _    / _|_  _ _ _  __| |_(_)___ _ _  ___
@@ -94,7 +85,7 @@
 (s/defn avg
         "Mixin function which averages the incoming signals"
         [& numbers]
-        (log/debug "mix/avg" numbers (statistics/mean numbers))
+        ;(log/debug "mix/avg" numbers (statistics/mean numbers))
         (statistics/mean numbers))
 
 (s/defn product

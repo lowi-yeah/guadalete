@@ -3,7 +3,6 @@
     (:refer-clojure :exclude [min max count conj]))
 
 
-
 (defn latest-aggregation-fn-init [window]
       {})
 

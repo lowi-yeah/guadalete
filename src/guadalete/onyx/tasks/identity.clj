@@ -12,13 +12,11 @@
        ]
       ))
 
-(defn log [called-by segment]
-      (let [
-            data (:data segment)
-            δ (- (System/currentTimeMillis) (:at segment))]
-           (log/debug (str called-by ": " segment " - " δ "ms"))
-           segment))
-
+;//   _    _         _   _ _
+;//  (_)__| |___ _ _| |_(_) |_ _  _
+;//  | / _` / -_) ' \  _| |  _| || |
+;//  |_\__,_\___|_||_\__|_|\__|\_, |
+;//                            |__/
 (s/defn identity-task
         "Identitiy function task used to anchor lifecycle hooks"
         ([task-name :- s/Keyword]
@@ -28,6 +26,18 @@
                                  :onyx/fn   :clojure.core/identity
                                  :onyx/type :function})}
            :schema {:task-map os/TaskMap}}))
+
+;//   _
+;//  | |___ __ _
+;//  | / _ \ _` |
+;//  |_\___\__, |
+;//        |___/
+(defn log [called-by segment]
+      (let [
+            data (:data segment)
+            δ (- (System/currentTimeMillis) (:at segment))]
+           (log/debug (str called-by ": " segment " - " δ "ms"))
+           segment))
 
 (defn inject-called-by
       "Injects the mixin function (@see functions above)."
@@ -49,5 +59,38 @@
                                  :called-by called-by})
                   :lifecycles [{:lifecycle/task  task-name
                                 :lifecycle/calls ::log-lifecycle-calls}]}
+         :schema {:task-map   os/TaskMap
+                  :lifecycles [os/Lifecycle]}})
+
+;//      _ _
+;//   __| (_)_________ __
+;//  / _` | (_-<_-< _ \ _|
+;//  \__,_|_/__/__\___\__|
+;//
+(defn do-dissoc
+      "Dissasociates the given keys from the given segment."
+      [keys segment]
+      (apply dissoc segment keys))
+
+(defn inject-dissoc-keys
+      "Injects the keys to be dissoced from the segemnt"
+      [{:keys [onyx.core/task-map]} lifecycle]
+      {:onyx.core/params [(:dissoc/keys task-map)]})
+
+(def dissoc-lifecycle-calls
+  {:lifecycle/before-task-start inject-dissoc-keys})
+
+(s/defn ^:always-validate dissoc-task
+        "Identitiy function task used to anchor lifecycle hooks"
+        [task-name :- s/Keyword
+         keys :- [s/Keyword]]
+        {:task   {:task-map   (merge
+                                (onyx-defaults)
+                                {:onyx/name   task-name
+                                 :onyx/fn     ::do-dissoc
+                                 :onyx/type   :function
+                                 :dissoc/keys keys})
+                  :lifecycles [{:lifecycle/task  task-name
+                                :lifecycle/calls ::dissoc-lifecycle-calls}]}
          :schema {:task-map   os/TaskMap
                   :lifecycles [os/Lifecycle]}})
