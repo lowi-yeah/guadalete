@@ -1,53 +1,68 @@
+{
+  "scene-id" : "fix",
+  "nodes" : [ {
+    "id" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-brightness",
+    "attrs" : {
+      "type" : "color/brightness",
+      "name" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-brightness",
+      "channel" : "brightness",
+      "task" : "guadalete.onyx.tasks.items.color/in"
+    }
+  }, {
+    "id" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-out",
+    "attrs" : {
+      "type" : "color/out",
+      "name" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-out",
+      "task" : "guadalete.onyx.tasks.items.color/out"
+    }
+  }, {
+    "id" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-inner",
+    "attrs" : {
+      "type" : "color/inner",
+      "name" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-inner",
+      "task" : "guadalete.onyx.tasks.items.color/inner"
+    }
+  }, {
+    "id" : "an-mqtt-light-in",
+    "attrs" : {
+      "type" : "light/in",
+      "name" : "an-mqtt-light-in",
+      "task" : "guadalete.onyx.tasks.items.light/in"
+    }
+  }, {
+    "id" : "quicksine-out",
+    "attrs" : {
+      "type" : "signal/out",
+      "name" : "quicksine-out",
+      "task" : "guadalete.onyx.tasks.items.signal/in",
+      "signal-id" : "quicksine",
+      "id" : "sgnl-b5488101-fc28-4ab6-87c4-ab865c7e981a"
+    }
+  } ],
+  "edges" : [ {
+    "from" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-out",
+    "to" : "an-mqtt-light-in"
+  }, {
+    "from" : "quicksine-out",
+    "to" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-brightness"
+  }, {
+    "from" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-inner",
+    "to" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-out"
+  }, {
+    "from" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-brightness",
+    "to" : "370b10c0-0ccf-43e3-bc8a-698459d52d05-inner"
+  } ]
 
-mqtt->kafka gdlt-sgnl-v 0.9866598431456518
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.9866598431456518,"id":"quicksine","at":1473842238352}
-mqtt->kafka gdlt-sgnl-v 0.9803177039628544
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.9803177039628544,"id":"quicksine","at":1473842239346}
-mqtt->kafka gdlt-sgnl-v 0.9727750206647741
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=sine, value={"data":0.9727750206647741,"id":"sine","at":1473842240084}
-mqtt->kafka gdlt-sgnl-v 0.9582577595813739
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.9582577595813739,"id":"quicksine","at":1473842240358}
-mqtt->kafka gdlt-sgnl-v 0.9476892446237914
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=slowsine, value={"data":0.9476892446237914,"id":"slowsine","at":1473842240703}
-mqtt->kafka gdlt-sgnl-v 0.8945309515075508
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.8945309515075508,"id":"quicksine","at":1473842241365}
-mqtt->kafka gdlt-sgnl-v 0.8786864465321743
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=sine, value={"data":0.8786864465321743,"id":"sine","at":1473842242090}
-mqtt->kafka gdlt-sgnl-v 0.8513838429705178
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.8513838429705178,"id":"quicksine","at":1473842242371}
-mqtt->kafka gdlt-sgnl-v 0.8331666290610316
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.8331666290610316,"id":"quicksine","at":1473842243377}
-mqtt->kafka gdlt-sgnl-v 0.8141166720887187
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=sine, value={"data":0.8141166720887187,"id":"sine","at":1473842244097}
-mqtt->kafka gdlt-sgnl-v 0.7820242207364814
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.7820242207364814,"id":"quicksine","at":1473842244383}
-mqtt->kafka gdlt-sgnl-v 0.7610368217907961
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=slowsine, value={"data":0.7610368217907961,"id":"slowsine","at":1473842244714}
-mqtt->kafka gdlt-sgnl-v 0.6711108877026373
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.6711108877026373,"id":"quicksine","at":1473842245386}
-mqtt->kafka gdlt-sgnl-v 0.6474163499208463
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=sine, value={"data":0.6474163499208463,"id":"sine","at":1473842246102}
-mqtt->kafka gdlt-sgnl-v 0.6087636706229399
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.6087636706229399,"id":"quicksine","at":1473842246400}
-mqtt->kafka gdlt-sgnl-v 0.5842365546192646
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.5842365546192646,"id":"quicksine","at":1473842247407}
-mqtt->kafka gdlt-sgnl-c {"name" "sine", "type" "analog"}
-ProducerRecord(topic=gdlt-sgnl-c, partition=null, key=sine, value={"name":"sine","type":"analog","at":1473842247752}
-mqtt->kafka gdlt-lght-c {"name" "an-mqtt-light", "type" "rgb", "accepts" ["rgb" "hsv"]}
-ProducerRecord(topic=gdlt-lght-c, partition=null, key=an-mqtt-light, value={"name":"an-mqtt-light","type":"rgb","accepts":["rgb","hsv"],"at":1473842247753}
-mqtt->kafka gdlt-sgnl-c {"name" "slowsine", "type" "analog"}
-ProducerRecord(topic=gdlt-sgnl-c, partition=null, key=slowsine, value={"name":"slowsine","type":"analog","at":1473842247754}
-mqtt->kafka gdlt-sgnl-c {"name" "quicksine", "type" "analog"}
-ProducerRecord(topic=gdlt-sgnl-c, partition=null, key=quicksine, value={"name":"quicksine","type":"analog","at":1473842247754}
-mqtt->kafka gdlt-sgnl-v 0.5594988910985907
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=sine, value={"data":0.5594988910985907,"id":"sine","at":1473842248109}
-mqtt->kafka gdlt-sgnl-v 0.5196351653157276
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.5196351653157276,"id":"quicksine","at":1473842248413}
-mqtt->kafka gdlt-sgnl-v 0.4946403182260929
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=slowsine, value={"data":0.4946403182260929,"id":"slowsine","at":1473842248720}
-mqtt->kafka gdlt-sgnl-v 0.3954181968046427
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.3954181968046427,"id":"quicksine","at":1473842249419}
-mqtt->kafka gdlt-sgnl-v 0.3711120653025748
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=sine, value={"data":0.3711120653025748,"id":"sine","at":1473842250117}
-mqtt->kafka gdlt-sgnl-v 0.3329173086852064
-ProducerRecord(topic=gdlt-sgnl-v, partition=null, key=quicksine, value={"data":0.3329173086852064,"id":"quicksine","at":1473842250428}
+Nodes:
+  :quicksine-out {:type :signal/out, :name :quicksine-out, :task :guadalete.onyx.tasks.items.signal/in, :signal-id quicksine, :id sgnl-b5488101-fc28-4ab6-87c4-ab865c7e981a}
+  :370b10c0-0ccf-43e3-bc8a-698459d52d05-brightness {:type :color/brightness, :name :370b10c0-0ccf-43e3-bc8a-698459d52d05-brightness, :channel :brightness, :task :guadalete.onyx.tasks.items.color/in}
+  :370b10c0-0ccf-43e3-bc8a-698459d52d05-inner {:type :color/inner, :name :370b10c0-0ccf-43e3-bc8a-698459d52d05-inner, :task :guadalete.onyx.tasks.items.color/inner}
+  :370b10c0-0ccf-43e3-bc8a-698459d52d05-out {:type :color/out, :name :370b10c0-0ccf-43e3-bc8a-698459d52d05-out, :task :guadalete.onyx.tasks.items.color/out}
+  :an-mqtt-light-in {:type :light/in, :name :an-mqtt-light-in, :task :guadalete.onyx.tasks.items.light/in}
+
+4 Edges:
+  :quicksine-out -> :370b10c0-0ccf-43e3-bc8a-698459d52d05-brightness
+  :370b10c0-0ccf-43e3-bc8a-698459d52d05-brightness -> :370b10c0-0ccf-43e3-bc8a-698459d52d05-inner
+  :370b10c0-0ccf-43e3-bc8a-698459d52d05-inner -> :370b10c0-0ccf-43e3-bc8a-698459d52d05-out
+  :370b10c0-0ccf-43e3-bc8a-698459d52d05-out -> :an-mqtt-light-in
+

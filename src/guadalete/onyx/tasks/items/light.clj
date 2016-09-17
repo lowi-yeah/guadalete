@@ -7,6 +7,6 @@
       [guadalete.onyx.tasks.async :as async]))
 
 (s/defn in
-        [{:keys [name]}]
-        (log/debug "light/in!!")
+        [{:keys [name] :as light}]
+        (log/debug "light/in!!" light)
         (async/publish-task name))

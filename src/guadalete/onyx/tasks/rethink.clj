@@ -56,7 +56,7 @@
                  (map #(assoc (get-in % [:message]) :id (get-in % [:message :id])))
                  (into []))]
            (when (not-empty items)
-                 (log/debug "items" items)
+                 ;(log/debug "items" items)
                  (upsert! db-connection table items))
            {}))
 

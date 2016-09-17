@@ -23,7 +23,7 @@
                             :name      (make-id (:id item) (name type))
                             :task      (task* :signal :in)
                             :signal-id (:id item)
-                            ;:id        (:id node)
+                            :id        (:id node)
                             }
 
                :mixer/in-0 {:type    type

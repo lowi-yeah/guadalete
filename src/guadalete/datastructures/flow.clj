@@ -214,8 +214,5 @@
              (filter #(not-empty (:flows %)))
              (map #(assemble-scene % items))
              (flatten)
-             (into []))
-        ;(try
-        ;  (catch Exception e (str "caught exception: " (.getMessage e))))
-        )
+             (into [])))
 

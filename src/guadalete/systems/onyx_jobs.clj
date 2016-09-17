@@ -5,6 +5,7 @@
       [taoensso.timbre :as log]
       [guadalete.onyx.jobs.core :refer [make-jobs]]
       [guadalete.utils.config :as config]
+      [guadalete.utils.util :refer [pretty]]
       [clojure.stacktrace :refer [print-stack-trace]]))
 
 (defn- start-job [peer-config {:keys [name job]}]
@@ -22,22 +23,16 @@
             (map (partial start-job peer-config))
             (into [])))
 
-(defrecord JobRunner [rethinkdb
-                      onyx kafka mqtt
-                      ]
+(defrecord JobRunner [rethinkdb onyx]
            component/Lifecycle
            (start [component]
                   (log/info "starting component: JobRunner")
                   (try
                     (let [
                           peer-config (:peer-config onyx)
-                          jobs (make-jobs {:rethinkdb rethinkdb
-                                           ;:onyx      onyx
-                                           ;:kafka     kafka
-                                           ;:mqtt      mqtt
-                                           })
-                          job-ids (start-jobs peer-config jobs)
-                          ]
+                          jobs (make-jobs {:rethinkdb rethinkdb})
+                          job-ids (start-jobs peer-config jobs)]
+
                          (assoc component :job-ids job-ids :peer-config peer-config))
                     (catch Exception e
                       (log/error "ERROR in JobRunner" e)

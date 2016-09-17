@@ -24,8 +24,7 @@
               ;_ (log/debug "/t fn-symbol" fn-symbol)
               function (resolve fn-symbol)
               ;_ (log/debug "/t function" function)
-              task-map (function attrs)
-              ]
+              task-map (function attrs)]
              ;(log/debug "task-map" node-id "\n\t" task-map)
              ;(validate! os/TaskMap task-map)
              ;(validate! gs/TaskDescription task-map)

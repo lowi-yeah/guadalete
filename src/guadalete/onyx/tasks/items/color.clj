@@ -68,16 +68,16 @@
   {:lifecycle/before-batch inject-state})
 
 (defn make-color [state segment]
-      (let [color (-> {:brightness (get-in state [:brightness :value])
-                       :saturation (get-in state [:saturation :value])
-                       :hue        (get-in state [:hue :value])}
-                      (assoc (:channel segment) (:value segment)))]
+      (let [color (-> {:brightness (or (get-in state [:brightness :data]) 0)
+                       :saturation (or (get-in state [:saturation :data]) 0)
+                       :hue        (or (get-in state [:hue :data]) 0)}
+                      (assoc (:channel segment) (:data segment)))]
            (merge segment color)))
 
 (s/defn inner
         [{:keys [name] :as attributes}]
         (log/debug "TASK | color/inner" attributes)
-        (let [window-id (keyword "window-" (str (uuid/v1)))
+        (let [window-id (keyword "window-" (subs (str (uuid/v1)) 1))
 
               task-map (merge
                          (onyx-defaults)

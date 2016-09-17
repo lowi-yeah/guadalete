@@ -1,5 +1,6 @@
 (ns guadalete.schema.core
     (:require
+      [taoensso.timbre :as log]
       [schema.utils :as utils]
       [schema.core :as s]
       [schema.coerce :as coerce]
@@ -13,6 +14,22 @@
 
 (s/defschema Map
              {s/Keyword s/Any})
+
+
+;//
+;//   _  _ ______ _ _ ___
+;//  | || (_-< -_) '_(_-<
+;//   \_,_/__\___|_| /__/
+;//
+(s/defschema UserRole
+             (s/enum :user :admin))
+
+(s/defschema User
+             {:id       s/Str
+              :password s/Str
+              :roles    [UserRole]
+              :username s/Str})
+
 
 
 ;//   _ _      _
@@ -162,18 +179,26 @@
 (s/defschema Rooms
              {s/Str s/Any})                                 ; map id->Room
 
+(s/defschema ColorChannel
+             {:name  s/Keyword
+              :dmx   [s/Num]
+              :index s/Num})
+
+(s/defschema SimpleColor
+             {:brightness                  s/Num
+              (s/optional-key :saturation) s/Num
+              (s/optional-key :hue)        s/Num})
+
+
 (s/defschema DMXLight
-             {:room-id   s/Str
-              :id        s/Str
-              :name      s/Str
-              :type      (s/enum :v :sv :hsv)
-              :channels  {:brightness                  [s/Num]
-                          (s/optional-key :saturation) [s/Num]
-                          (s/optional-key :hue)        [s/Num]}
-              :color     {:brightness                  s/Num
-                          (s/optional-key :saturation) s/Num
-                          (s/optional-key :hue)        s/Num}
-              :transport (s/eq :dmx)})
+             {:room-id      s/Str
+              :id           s/Str
+              :name         s/Str
+              :type         (s/enum :v :sv :hsv)
+              :num-channels s/Num
+              :channels     [ColorChannel]
+              :color        SimpleColor
+              :transport    (s/eq :dmx)})
 
 (s/defschema MqttLightConfig
              {:name s/Str
@@ -187,9 +212,10 @@
               :name                     s/Str
               :type                     (s/enum :v :sv :hsv)
               :transport                (s/eq :mqtt)
-              (s/optional-key :color)   {:brightness                  s/Num
-                                         (s/optional-key :saturation) s/Num
-                                         (s/optional-key :hue)        s/Num}})
+              :accepted?                s/Bool
+              (s/optional-key :created) s/Any
+              (s/optional-key :updated) s/Any
+              (s/optional-key :color)   SimpleColor})
 
 (s/defschema Light
              (s/conditional
@@ -217,17 +243,21 @@
              {s/Str Scene})
 
 (s/defschema Signal
-             {:name      s/Str
-              :type      s/Str
-              :id        s/Str
-              :accepted? s/Bool})
+             {:name                     s/Str
+              :type                     s/Str
+              :id                       s/Str
+              :accepted?                s/Bool
+              (s/optional-key :created) s/Any
+              (s/optional-key :updated) s/Any
+              (s/optional-key :at)      s/Num
+              })
 
 (s/defschema Signals
              {s/Str Signal})
 
 (s/defschema Color
              {:id         s/Str
-              :color-type (s/enum :v :sv :hsv)
+              :type       (s/enum :v :sv :hsv)
               :brightness s/Num})
 
 (s/defschema Colors
@@ -245,6 +275,13 @@
               :mixer  [Mixer]
               :signal [Signal]
               :color  [Color]})
+
+(s/defschema Room
+             {:id     s/Str
+              :name   s/Str
+              :light  [s/Str]
+              :scene  [s/Str]
+              :sensor [s/Str]})
 
 
 ;//                      _
@@ -283,3 +320,18 @@
   (coerce/coercer [Scene] coerce/json-coercion-matcher))
 
 
+(defn coerce!
+      [item type]
+      (condp = type
+             :user ((coerce/coercer User coerce/json-coercion-matcher) item)
+             :room ((coerce/coercer Room coerce/json-coercion-matcher) item)
+             :light ((coerce/coercer Light coerce/json-coercion-matcher) item)
+             :scene ((coerce/coercer Scene coerce/json-coercion-matcher) item)
+             :signal ((coerce/coercer Signal coerce/json-coercion-matcher) item)
+             :color ((coerce/coercer Color coerce/json-coercion-matcher) item)
+             (log/error (str "Cannot coerce item: " item ". Dunno item type: " type))))
+
+(defn coerce-all
+      [coll type]
+      (->> coll
+           (map #(coerce! % type))))

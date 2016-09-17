@@ -5,7 +5,7 @@
       [guadalete.onyx.tasks.kafka :as kafka-tasks]
       [guadalete.onyx.tasks.redis :as redis-tasks]
       [guadalete.onyx.tasks.rethink :as rethink-tasks]
-      [guadalete.onyx.tasks.logging :as log-tasks]
+      [guadalete.onyx.tasks.identity :refer [log-task]]
       [guadalete.config.kafka :as kafka-config]
       [guadalete.config.task :as taks-config]
       [guadalete.config.onyx :refer [onyx-defaults]]
@@ -16,8 +16,13 @@
 
 (defn signal-timeseries-consumer []
       (let [
-            workflow [[:read-from-kafka :write-to-redis]]
+            workflow [
+                      [:read-from-kafka :write-to-redis]
+                      ;[:read-from-kafka :log]
+                      ;[:log :write-to-redis]
+                      ]
             tasks [(kafka-tasks/signal-value-consumer :read-from-kafka "signal-value-consumer")
+                   ;(log-task :log "signal-timeseries-consumer")
                    (redis-tasks/write-signals-timeseries :write-to-redis)]
             job (-> empty-job
                     (add-tasks tasks)
@@ -41,13 +46,13 @@
 ;//  | | / _` | ' \  _| / _/ _ \ ' \|  _| / _` |
 ;//  |_|_\__, |_||_\__| \__\___/_||_|_| |_\__, |
 ;//      |___/                            |___/
-(s/defn ^:always-validate transform-config :- gs/Light
+(s/defn transform-config
         [{:keys [name type] :as segment} :- gs/MqttLightConfig]
         (-> segment
             (assoc :transport :mqtt)
-            (dissoc :at)
-            (gs/coerce-light)))
-
+            (dissoc :at :name)
+            ;(gs/coerce-light)
+            ))
 
 (defn light-config-consumer []
       (let [
@@ -55,13 +60,13 @@
                       [:light-config-transform :write-to-rethink]]
             tasks [(kafka-tasks/light-config-consumer :read-from-kafka)
 
-                   {:task   {:task-map   (merge {:onyx/name   :light-config-transform
-                                                 :onyx/plugin :onyx.peer.function/function
-                                                 :onyx/fn     ::transform-config
-                                                 :onyx/type   :function
-                                                 :onyx/doc    "Transforms incoming light configuration messages."}
-                                                (onyx-defaults))}
-                    :schema {:task-map   os/TaskMap}}
+                   {:task   {:task-map (merge {:onyx/name   :light-config-transform
+                                               :onyx/plugin :onyx.peer.function/function
+                                               :onyx/fn     ::transform-config
+                                               :onyx/type   :function
+                                               :onyx/doc    "Transforms incoming light configuration messages."}
+                                              (onyx-defaults))}
+                    :schema {:task-map os/TaskMap}}
 
                    (rethink-tasks/output :write-to-rethink {:task-opts (onyx-defaults) :lifecycle-opts (merge (taks-config/rethink) {:rethinkdb/table "light"})})]
             job (-> empty-job
