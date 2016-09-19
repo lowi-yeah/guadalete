@@ -15,8 +15,8 @@
 
 
 (defn compose! [channel state segment]
-    (log/debug "compose!" channel segment state)
-     (assoc segment :channel channel))
+      (log/debug "compose!" channel segment state)
+      (assoc segment :channel channel))
 
 (defn inject-state
       [{:keys [onyx.core/windows-state onyx.core/params]} _lifecycle]
@@ -39,7 +39,7 @@
       {:h 0 :s 0 :v 0})
 
 (defn color-aggregation-fn [window state segment]
-      (log/debug "color-aggregation-fn | segment" segment )
+      (log/debug "color-aggregation-fn | segment" segment)
       segment)
 
 (defn color-super-aggregation [window state-1 state-2]
@@ -58,7 +58,7 @@
 
 (s/defn color
         [task-name :- s/Keyword
-        channel :- s/Keyword]
+         channel :- s/Keyword]
         (let [window-id (keyword (name task-name) (str channel "-window"))
               task-map (merge
                          (onyx-defaults)

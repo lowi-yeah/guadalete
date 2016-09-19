@@ -9,7 +9,6 @@
       [clojure.stacktrace :refer [print-stack-trace]]))
 
 (defn- start-job [peer-config {:keys [name job]}]
-       (log/debug "ztartig job" name)
        (let [{:keys [job-id]} (onyx.api/submit-job peer-config job)]
             job-id))
 
@@ -34,10 +33,9 @@
                           job-ids (start-jobs peer-config jobs)]
 
                          (assoc component :job-ids job-ids :peer-config peer-config))
-                    (catch Exception e
-                      (log/error "ERROR in JobRunner" e)
-                      ;(print-stack-trace ex)
-                      (e)
+                    (catch Exception ex
+                      (log/error "ERROR in JobRunner" ex)
+                      (print-stack-trace ex)
                       component)))
 
            (stop [component]

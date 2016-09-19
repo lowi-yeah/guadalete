@@ -13,5 +13,6 @@
         (let [task-name (:name attributes)
               group-id (:id attributes)
               signal-id (:signal-id attributes)]
-             (kafka-tasks/signal-value-consumer task-name group-id signal-id)))
+             (kafka-tasks/signal-value-consumer task-name group-id signal-id)
+             ))
 

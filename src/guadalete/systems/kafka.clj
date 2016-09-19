@@ -21,7 +21,6 @@
        [zookeeper-address topics]
        (with-open [zk (admin/zk-client zookeeper-address)]
                   (doseq [topic topics]
-                         (log/debug "kafka: bootstrapping topic" topic)
                          (if-not (admin/topic-exists? zk (:name topic))
                                  (do
                                    (admin/create-topic zk (:name topic)

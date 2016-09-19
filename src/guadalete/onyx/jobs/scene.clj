@@ -8,6 +8,12 @@
       [onyx.schema :as os]
       [guadalete.schema.core :as gs]
 
+      [guadalete.onyx.tasks.items.color]
+      [guadalete.onyx.tasks.items.light]
+      [guadalete.onyx.tasks.items.mixer]
+      [guadalete.onyx.tasks.items.signal]
+      [guadalete.onyx.filters]
+
       [guadalete.onyx.tasks.scene :refer [node-task]]
       [guadalete.onyx.jobs.util :refer [empty-job add-task add-tasks add-flow-conditions]]
       [guadalete.config.graph :as graph-config]
@@ -17,7 +23,7 @@
 (s/defn make-task :- os/TaskMap
         [graph
          node-id :- s/Keyword]
-        ;(log/debug "make-task" node-id)
+        (log/debug "make-task" node-id)
         (let [attrs (uber/attrs graph node-id)
               ;_ (log/debug "/t attrs" attrs)
               fn-symbol (symbol (namespace (:task attrs)) (name (:task attrs)))
@@ -25,11 +31,7 @@
               function (resolve fn-symbol)
               ;_ (log/debug "/t function" function)
               task-map (function attrs)]
-             ;(log/debug "task-map" node-id "\n\t" task-map)
-             ;(validate! os/TaskMap task-map)
-             ;(validate! gs/TaskDescription task-map)
-             task-map
-             ))
+             task-map))
 
 
 (s/defn make-flow-condition :- [os/FlowCondition]
@@ -84,11 +86,12 @@
         (log/debug "**** make-job-from-graph")
         (uber/pprint graph)
         (let [topological-ordering (alg/topsort graph)
+              _ (log/debug "topological-ordering")
               catalog (build-catalog* graph topological-ordering [])
-              ;_ (log/debug "catalog" (->> catalog
-              ;                            (map #(get % :task))
-              ;                            (into [])
-              ;                            (pretty)))
+              _ (log/debug "catalog" (->> catalog
+                                          (map #(get % :task))
+                                          (into [])
+                                          (pretty)))
 
               flows (make-flows graph)
               ;_ (log/debug "flows" (->> flows (pretty)))

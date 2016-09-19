@@ -6,7 +6,7 @@
       [clj-time.core :as t]
       [clj-uuid :as uuid]
       [guadalete.config.onyx :refer [onyx-defaults]]
-      [guadalete.onyx.tasks.identity :refer [identity-task log-task]]))
+      [guadalete.onyx.tasks.identity :refer [identity-task log-task dissoc-task dissoc-and-log-task]]))
 
 ;//   _                   _
 ;//  (_)_ _  __ ___ _ __ (_)_ _  __ _
@@ -110,6 +110,8 @@
 ;//               |___/           |___/
 (s/defn out
         [{:keys [name]}]
+
         ;(identity-task name)
-        (log-task name (str "color/out")))
+        (dissoc-and-log-task name [:data :id :at :channel])
+        )
 

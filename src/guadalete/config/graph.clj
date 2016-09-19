@@ -2,7 +2,9 @@
     (:require
       [taoensso.timbre :as log]
       [schema.core :as s]
-      [onyx.schema :as os]))
+      [onyx.schema :as os]
+      [guadalete.onyx.tasks.mqtt :as mqtt]
+      [guadalete.config.core :as config]))
 
 (s/defn ^:always-validate task*
         [ns* :- s/Keyword
@@ -14,6 +16,35 @@
         [item-id :- s/Str
          link-id :- s/Str]
         (keyword (str item-id "-" link-id)))
+
+
+
+(defn- light-attributes
+       [type node item]
+
+
+       (let [base {:type       type
+                   :name       (make-id (:id item) (name type))
+                   :transport  (:transport item)
+                   :task       (task* :light :in)
+                   :color-fn   :guadalete.onyx.tasks.items.light/hsv->rgb
+                   :color-type (:type item)}
+
+             transport-specific (condp = (:transport item)
+                                       :mqtt {:mqtt-id   (:id item)
+                                              :client-id (:id node)
+                                              :broker    (:mqtt-broker (config/mqtt))
+                                              :topic     (mqtt/make-topic (:id item) type)
+                                              }
+                                       :dmx {:channels (:channels :item)})]
+
+            (log/debug "light-attributez")
+            (log/debug "node" node)
+            (log/debug "item" item)
+            (log/debug "attributez" (merge base transport-specific))
+
+            (merge base transport-specific)))
+
 
 (s/defn attributes-for-type
         "Look up the attributes reqired to perform the task for a given ubergraph-node-type"
@@ -68,6 +99,4 @@
                            :name (make-id (:id item) (name type))
                            :task (task* :color :out)}
 
-               :light/in {:type type
-                          :name (make-id (:id item) (name type))
-                          :task (task* :light :in)}))
+               :light/in (light-attributes type node item)))

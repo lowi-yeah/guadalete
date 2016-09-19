@@ -72,6 +72,14 @@
       [keys segment]
       (apply dissoc segment keys))
 
+(defn dissoc-and-log
+      "Dissasociates the given keys from the given segment."
+      [keys segment]
+      (let [segment* (do-dissoc keys segment)]
+           (log/debug segment*)
+           segment*
+           ))
+
 (defn inject-dissoc-keys
       "Injects the keys to be dissoced from the segemnt"
       [{:keys [onyx.core/task-map]} lifecycle]
@@ -94,3 +102,18 @@
                                 :lifecycle/calls ::dissoc-lifecycle-calls}]}
          :schema {:task-map   os/TaskMap
                   :lifecycles [os/Lifecycle]}})
+
+(s/defn ^:always-validate dissoc-and-log-task
+        [task-name :- s/Keyword
+         keys :- [s/Keyword]]
+        {:task   {:task-map   (merge
+                                (onyx-defaults)
+                                {:onyx/name   task-name
+                                 :onyx/fn     ::dissoc-and-log
+                                 :onyx/type   :function
+                                 :dissoc/keys keys})
+                  :lifecycles [{:lifecycle/task  task-name
+                                :lifecycle/calls ::dissoc-lifecycle-calls}]}
+         :schema {:task-map   os/TaskMap
+                  :lifecycles [os/Lifecycle]}})
+
