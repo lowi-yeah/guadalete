@@ -45,6 +45,23 @@
                            (assoc-in [:schema :flow-conditions] [os/FlowCondition]))]
             consumer*))
 
+(defn- producer
+       "Helper for creating task that produce kafka messages."
+       [{:keys [task-name group-id topic]}]
+       {:task   {:task-map   (merge
+                               (onyx-defaults)
+                               (task-config/kafka-producer)
+                               {:onyx/name      task-name
+                                :onyx/plugin    :onyx.plugin.kafka/write-messages
+                                :onyx/type      :output
+                                :onyx/medium    :kafka
+                                :onyx/doc       (str "Produces " (kafka-config/get-topic topic) " messages for Kafka")
+                                :kafka/topic    (kafka-config/get-topic topic)
+                                :kafka/group-id group-id})
+                 :lifecycles [{:lifecycle/task  task-name
+                               :lifecycle/calls :onyx.plugin.kafka/read-messages-calls}]}
+        :schema {:task-map   os/TaskMap
+                 :lifecycles [os/Lifecycle]}})
 
 (s/defn signal-value-consumer
         "Task for consuming signal values from kafka."
@@ -74,4 +91,11 @@
           (consumer {:task-name task-name
                      :group-id  "light-config-consumer"
                      :topic     :light-config})))
+
+(s/defn light-producer
+        "Task for producing color-messages for (mqtt) lights"
+        ([task-name :- s/Keyword]
+          (producer {:task-name task-name
+                     :group-id  "light-producer"
+                     :topic     :light-out})))
 

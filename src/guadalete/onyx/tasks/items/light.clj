@@ -9,7 +9,7 @@
       [guadalete.config.onyx :refer [onyx-defaults]]
       [guadalete.config.core :as config]
       [guadalete.onyx.tasks.async :as async]
-      [guadalete.onyx.tasks.mqtt :as mqtt]))
+      [guadalete.onyx.tasks.mqtt :as mqtt] [guadalete.onyx.tasks.kafka :as kafka-tasks]))
 
 (s/defn hsv->rgb
         "Maps a given Color"
@@ -36,10 +36,7 @@
                :dmx (async/publish-task (:name light))
                :mqtt (do
                        (log/debug "transport MQTT" light)
-                       (mqtt/publish
-                         (:name light)
-                         (:topic light)
-                         (:client-id light)
-                         (:broker light)
-                         (:color-fn light)
-                         (:color-type light)))))
+
+                       (kafka-tasks/light-producer (:name light))
+                       ;(mqtt/publish (:name light) (:topic light) (:client-id light) (:broker light) (:color-fn light) (:color-type light))
+                       )))

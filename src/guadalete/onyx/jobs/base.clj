@@ -34,11 +34,11 @@
       (let [
             workflow [
                       [:read-from-kafka :write-to-rethink]
-                      [:read-from-kafka :log]
-                      [:log :write-to-rethink]
+                      ;[:read-from-kafka :log]
+                      ;[:log :write-to-rethink]
                       ]
             tasks [(kafka-tasks/signal-config-consumer :read-from-kafka)
-                   (log-task :log "signal-config-consumer")
+                   ;(log-task :log "signal-config-consumer")
                    (rethink-tasks/output :write-to-rethink {:task-opts (onyx-defaults) :lifecycle-opts (merge (taks-config/rethink) {:rethinkdb/table "signal"})})]
             job (-> empty-job
                     (add-tasks tasks)

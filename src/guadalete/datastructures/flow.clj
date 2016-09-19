@@ -113,6 +113,9 @@
         Take the id of the node as ns and the id of the inlet/outlet as name,
         and return (keyword ns name) as the graph-node id"
         [{:keys [node item]}]
+
+        (log/debug "dissect-node" node item)
+
         (let [bn (border-nodes node item)
               in (inner-node node item)
               nodes (->>

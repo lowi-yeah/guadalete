@@ -86,22 +86,17 @@
         (log/debug "**** make-job-from-graph")
         (uber/pprint graph)
         (let [topological-ordering (alg/topsort graph)
-              _ (log/debug "topological-ordering")
+              ;_ (log/debug "topological-ordering")
               catalog (build-catalog* graph topological-ordering [])
-              _ (log/debug "catalog" (->> catalog
-                                          (map #(get % :task))
-                                          (into [])
-                                          (pretty)))
+              ;_ (log/debug "catalog" (->> catalog
+              ;                            (map #(get % :task))
+              ;                            (into [])
+              ;                            (pretty)))
 
               flows (make-flows graph)
-              ;_ (log/debug "flows" (->> flows (pretty)))
-
-              ;flow-conditions (build-flow-conditions* graph (uber/edges graph) [])
-              ;_ (log/debug "flow-conditions" (into [] flow-conditions))
 
               job (-> empty-job
                       (add-tasks catalog)
-                      ;(add-flow-conditions flow-conditions)
                       (assoc :workflow flows))]
              {:name scene-id
               :job  job}))

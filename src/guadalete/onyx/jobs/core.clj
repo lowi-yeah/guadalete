@@ -36,14 +36,13 @@
               graph-jobs (->> (flow/assemble scenes items)
                               (map make-graph)
                               (scene-jobs/from-graphs))
-
               ;_ (log/debug "graph-jobs" (pretty graph-jobs))
 
               signal-config (base-jobs/signal-config-consumer)
               signal-value (base-jobs/signal-timeseries-consumer)
               light-config (base-jobs/light-config-consumer)
-              all-jobs (conj graph-jobs signal-value signal-config)
-              ;all-jobs (conj () signal-value signal-config light-config)
+              ;all-jobs (conj graph-jobs signal-value signal-config)
+              all-jobs (conj () signal-value signal-config light-config)
               ]
              all-jobs
              )))
