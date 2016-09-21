@@ -98,4 +98,3 @@
           (producer {:task-name task-name
                      :group-id  "light-producer"
                      :topic     :light-out})))
-

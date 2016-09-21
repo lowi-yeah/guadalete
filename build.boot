@@ -31,10 +31,7 @@
                   [danlentz/clj-uuid "0.1.6"]
                   [javax.jmdns/jmdns "3.4.1"]
                   [commons-net "3.0.1"]
-                  [overtone/at-at "1.1.1"]
-                  [ymilky/franzy "0.0.1"]
-                  [ymilky/franzy-admin "0.0.1"]
-                  ])
+                  [overtone/at-at "1.1.1"]])
 (require
   '[reloaded.repl :as repl :refer [start stop go reset]]
   '[guadalete.systems.core :refer [dev-system]]

@@ -77,8 +77,7 @@
       [keys segment]
       (let [segment* (do-dissoc keys segment)]
            (log/debug segment*)
-           segment*
-           ))
+           segment*))
 
 (defn inject-dissoc-keys
       "Injects the keys to be dissoced from the segemnt"

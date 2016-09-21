@@ -37,8 +37,8 @@
         (log/debug "mqtt publish" task-name topic client-id broker color-fn color-type)
         {:task   {:task-map   (merge (onyx-defaults)
                                      {:onyx/name        task-name
-                                      :onyx/plugin      :guadalete.onyx.plugin.mqtt/publish
-                                      ;:onyx/plugin    :guadalete.onyx.plugin.mock-mqtt/publish
+                                      ;:onyx/plugin      :guadalete.onyx.plugin.mqtt/publish
+                                      :onyx/plugin    :guadalete.onyx.plugin.mock-mqtt/publish
                                       :onyx/type        :output
                                       :onyx/medium      :mqtt
                                       :onyx/doc         "Publishes segment to mqtt"
@@ -48,8 +48,8 @@
                                       :color/mapping-fn color-fn
                                       :color/type       color-type})
                   :lifecycles [{:lifecycle/task  task-name
-                                :lifecycle/calls :guadalete.onyx.plugin.mqtt/publish-calls
-                                ;:lifecycle/calls :guadalete.onyx.plugin.mock-mqtt/publish-calls
+                                ;:lifecycle/calls :guadalete.onyx.plugin.mqtt/publish-calls
+                                :lifecycle/calls :guadalete.onyx.plugin.mock-mqtt/publish-calls
                                 }]}
          :schema {:task-map   (merge os/TaskMap MqttOutputTask)
                   :lifecycles [os/Lifecycle]}})

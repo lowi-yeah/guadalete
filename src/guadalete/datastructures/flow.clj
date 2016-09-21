@@ -6,7 +6,9 @@
       [guadalete.utils.util :refer [pretty validate!]]
       [guadalete.config.graph :refer [attributes-for-type]]
       [schema.core :as s]
-      [guadalete.schema.core :as gs]))
+      [guadalete.schema.core :as gs]
+      [guadalete.graph.node :as node])
+    )
 
 
 ;; # How to make the flow-graph
@@ -107,21 +109,20 @@
 
 (s/defn ^:always-validate dissect-node :- [gs/NodeDescription]
         "Takes a Node (ie NOT a ubergraph node) and dissects its inner workings.
-        Returns a map of of ubergraph-node & edge descriptions.
+        Returns a map of of ubergraph-node descriptions.
         Depending on the type of node (Signal, Mixer, etc…) different approaches need to be taken.
         Source & Sink nodes (ie. nodes that have only incoming OR only outging links) are pretty easy to handle:
         Take the id of the node as ns and the id of the inlet/outlet as name,
         and return (keyword ns name) as the graph-node id"
         [{:keys [node item]}]
-
         (log/debug "dissect-node" node item)
+        (let [
+              ;node-record (node/build node item)
+              ]
 
-        (let [bn (border-nodes node item)
-              in (inner-node node item)
-              nodes (->>
-                      (conj bn in)
-                      (filter #(not (nil? %))))]
-             nodes))
+             ;(log/debug "node-record" node-record)
+             ;(log/debug "result" result)
+             []))
 
 (s/defn ^:always-validate load-item
         [node :- gs/Node
@@ -148,15 +149,19 @@
                  (assoc-in [:from :item-id] from-item)
                  (assoc-in [:to :item-id] to-item))))
 
-(s/defn ^:always-validate assemble-nodes
+(s/defn ^:always-validate assemble-nodes :- gs/NodeAndEdgeDescription
         [nodes :- [gs/Node]
          items :- gs/Items]
-        (let [graph-nodes (->> nodes
+        (let [assembly {:nodes [] :edges []}
+              graph-nodes (->> nodes
                                (map #(load-item % items))
-                               (map dissect-node)
-                               (apply concat)
-                               (into []))]
-             ;(log/debug "graph-nodes" (pretty graph-nodes))
+                               (map #(node/dissect %))
+                               (reduce (fn [result description]
+                                           (-> result
+                                               (assoc :nodes (concat (:nodes result) (:nodes description)))
+                                               (assoc :edges (concat (:edges result) (:edges description)))))
+                                       assembly))]
+             (log/debug "graph-nodes\n" graph-nodes)
              graph-nodes))
 
 
@@ -188,26 +193,19 @@
         [flows :- [gs/FlowReference]
          nodes :- gs/Nodes
          items :- gs/Items]
-        (let [inner-edges* (->> nodes
-                                (vals)
-                                (map #(load-item % items))
-                                (map inner-edges))
-              flow-edges* (->> flows
-                               (map #(load-edge-items % nodes items))
-                               (map flow-edges))
-              edges* (-> ()
-                         (conj inner-edges* flow-edges*)
-                         (flatten))]
-             edges*))
+        (->> flows
+             (map #(load-edge-items % nodes items))
+             (map flow-edges)))
 
 (s/defn ^:always-validate assemble-scene
         [scene :- gs/Scene
          items :- gs/Items]
-        (let [nodes (assemble-nodes (vals (:nodes scene)) items)
-              edges (assemble-edges (vals (:flows scene)) (:nodes scene) items)]
+        (let [{:keys [nodes edges]} (assemble-nodes (vals (:nodes scene)) items)
+              outer-edges (assemble-edges (vals (:flows scene)) (:nodes scene) items)
+              edges* (concat edges outer-edges)]
              {:scene-id (:id scene)
               :nodes    nodes
-              :edges    (into [] edges)}))
+              :edges    edges*}))
 
 
 (s/defn ^:always-validate assemble
@@ -218,4 +216,3 @@
              (map #(assemble-scene % items))
              (flatten)
              (into [])))
-

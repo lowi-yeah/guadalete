@@ -298,6 +298,10 @@
              {:id                     s/Keyword
               (s/optional-key :attrs) Map})
 
+(s/defschema NodeAndEdgeDescription
+             {:nodes [NodeDescription]
+              :edges [EdgeDescription]})
+
 
 ;//                     _
 ;//   __ ___ ___ _ _ ____)___ _ _

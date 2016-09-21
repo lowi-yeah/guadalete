@@ -11,38 +11,35 @@
          fn* :- s/Keyword]
         (keyword (str "guadalete.onyx.tasks.items." (name ns*)) (name fn*)))
 
-
 (s/defn ^:always-validate make-id :- s/Keyword
         [item-id :- s/Str
          link-id :- s/Str]
         (keyword (str item-id "-" link-id)))
 
-
-
-(defn- light-attributes
+(defn- light-in-attributes
        [type node item]
+       {:type       type
+        :name       (make-id (:id item) (name type))
+        :transport  (:transport item)
+        :light-id   (:id item)
+        :task       (task* :light :in)
+        :color-type (:type item)})
 
-
+(defn- light-sink-attributes
+       [type node item]
+       (log/debug "light-sink-attributes | type" type)
        (let [base {:type       type
                    :name       (make-id (:id item) (name type))
                    :transport  (:transport item)
-                   :task       (task* :light :in)
+                   :task       (task* :light :out)
                    :color-fn   :guadalete.onyx.tasks.items.light/hsv->rgb
                    :color-type (:type item)}
-
              transport-specific (condp = (:transport item)
                                        :mqtt {:mqtt-id   (:id item)
                                               :client-id (:id node)
                                               :broker    (:mqtt-broker (config/mqtt))
-                                              :topic     (mqtt/make-topic (:id item) type)
-                                              }
+                                              :topic     (mqtt/make-topic (:id item) type)}
                                        :dmx {:channels (:channels :item)})]
-
-            (log/debug "light-attributez")
-            (log/debug "node" node)
-            (log/debug "item" item)
-            (log/debug "attributez" (merge base transport-specific))
-
             (merge base transport-specific)))
 
 
@@ -99,4 +96,5 @@
                            :name (make-id (:id item) (name type))
                            :task (task* :color :out)}
 
-               :light/in (light-attributes type node item)))
+               :light/in (light-in-attributes type node item)
+               :light/sink (light-sink-attributes type node item)))

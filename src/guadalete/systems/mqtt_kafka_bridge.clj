@@ -40,17 +40,11 @@
              :key     id
              :message message}))
 
-(defn- kafka->mqtt [kafka-topic kafka-payload]
-       (log/debug "kafka->mqtt" kafka-topic kafka-payload)
-       "kafka->mqtt")
-
-(defn- publish! [message-and-metadata]
-       (let [
-             ;payload
-             ]
-            ;(log/debug "publish" message-and-metadata)
-
-            ))
+(defn- publish! [mqtt {:keys [topic message]}]
+       (log/debug "publish" topic message)
+       ;(log/debug "mqtt" (:conn mqtt))
+       (mh/publish (:conn mqtt) topic message)
+       )
 
 (defn- dispatch! [kafka-producer ^String mqtt-topic _ ^bytes mqtt-payload]
        (let [{:keys [topic key message]} (mqtt->kafka mqtt-topic mqtt-payload)
@@ -58,17 +52,12 @@
             ;(log/debug r)
             (send kafka-producer r)))
 
+(defn- trim [s] (subs s 1 (- (count s) 1)))
 
 (defn- deserialize-message [{:keys [topic offset partition key value]}]
-       (let [
-             ;key* (.getBytes key "UTF-8")
-             ;value* (.getBytes value "UTF-8")
-             ]
-            ;(log/debug "deserialize-message" topic key* value*)
-            (log/debug "deserialize-message" topic key value)
-
-            {:topic topic
-             :id    "some-id"}))
+       (let [mqtt-topik (str "/lght/o/" (trim key))]
+            {:topic   mqtt-topik
+             :message (trim value)}))
 
 (def xform (comp (map deserialize-message)))
 
@@ -79,33 +68,23 @@
                   (log/info "kafka" kafka)
                   (log/info "mqtt topics" (:topics mqtt))
                   (if (:brokers kafka)
-
                     (try
-
-
                       (let [p-config {"bootstrap.servers" (:brokers kafka)
                                       "acks"              "0"
                                       "batch.size"        "1"
                                       "linger.ms"         "0"}
                             p (producer p-config (string-serializer) (string-serializer))
-
                             c-config {"zookeeper.connect"       (:zookeeper-address kafka)
                                       "group.id"                "kafka-mqtt.consumer"
                                       "auto.offset.reset"       "largest"
                                       "auto.commit.interval.ms" "10000"
                                       "auto.commit.enable"      "true"}
-
                             c (zk/consumer c-config)
-                            ;kafka-stream (zk/create-message-stream c "gdlt-lght-o")
-                            ;message-opts {:key-decoder   (StringDecoder. nil)
-                            ;              :value-decoder (StringDecoder. nil)}
-
-                            messages (zk/stream-seq (zk/create-message-stream c "gdlt-lght-o" (StringDecoder. nil) (StringDecoder. nil)))
-                            ]
+                            messages (zk/stream-seq (zk/create-message-stream c "gdlt-lght-o" (StringDecoder. nil) (StringDecoder. nil)))]
 
                            (mh/subscribe (:conn mqtt) (:topics mqtt) (partial dispatch! p))
 
-                           (go (run! publish! (eduction xform messages)))
+                           (go (run! (partial publish! mqtt) (eduction xform messages)))
 
                            (-> component
                                (assoc :consumer c))

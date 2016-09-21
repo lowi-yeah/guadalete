@@ -4,7 +4,7 @@
       [schema.core :as s]
       [onyx.schema :as os]
       [clj-time.core :as t]
-      [clj-uuid :as uuid]
+      [onyx.static.uuid :refer [random-uuid]]
       [guadalete.config.onyx :refer [onyx-defaults]]
       [guadalete.onyx.tasks.identity :refer [identity-task log-task dissoc-task dissoc-and-log-task]]))
 
@@ -23,6 +23,7 @@
   {:lifecycle/before-task-start inject-channel})
 
 (defn assoc-channel [channel segment]
+      ;(log/debug "assoc-channel" segment channel)
       (assoc segment :channel channel))
 
 (s/defn in
@@ -40,7 +41,8 @@
              {:task   {:task-map   task-map
                        :lifecycles lifecycles}
               :schema {:task-map   os/TaskMap
-                       :lifecycles [os/Lifecycle]}}))
+                       :lifecycles [os/Lifecycle]}})
+        )
 
 ;//   _         _    _
 ;//  (_)_ _  __(_)__| |___
@@ -76,9 +78,7 @@
 
 (s/defn inner
         [{:keys [name] :as attributes}]
-        (log/debug "TASK | color/inner" attributes)
-        (let [window-id (keyword "window-" (subs (str (uuid/v1)) 1))
-
+        (let [window-id (keyword (str "w-" (subs (str random-uuid) 4)))
               task-map (merge
                          (onyx-defaults)
                          {:onyx/name           name
@@ -110,8 +110,8 @@
 ;//               |___/           |___/
 (s/defn out
         [{:keys [name]}]
-
         ;(identity-task name)
-        (dissoc-and-log-task name [:data :id :at :channel])
+        ;(dissoc-and-log-task name [:data :id :channel])
+        (dissoc-task name [:data :id :channel])
         )
 

@@ -31,7 +31,7 @@
                           peer-config (:peer-config onyx)
                           jobs (make-jobs {:rethinkdb rethinkdb})
                           job-ids (start-jobs peer-config jobs)]
-
+                         (log/debug "JobRunner | jobs" jobs)
                          (assoc component :job-ids job-ids :peer-config peer-config))
                     (catch Exception ex
                       (log/error "ERROR in JobRunner" ex)

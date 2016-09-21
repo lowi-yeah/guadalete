@@ -22,7 +22,7 @@
                       ;[:log :write-to-redis]
                       ]
             tasks [(kafka-tasks/signal-value-consumer :read-from-kafka "signal-value-consumer")
-                   ;(log-task :log "signal-timeseries-consumer")
+                   (log-task :log "signal-timeseries-consumer")
                    (redis-tasks/write-signals-timeseries :write-to-redis)]
             job (-> empty-job
                     (add-tasks tasks)
@@ -56,7 +56,6 @@
         (-> segment
             (assoc :transport :mqtt)
             (dissoc :at :name)
-            ;(gs/coerce-light)
             ))
 
 (defn light-config-consumer []
