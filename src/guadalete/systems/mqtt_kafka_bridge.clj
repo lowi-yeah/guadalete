@@ -26,7 +26,7 @@
 
 
 (defn- mqtt->kafka [mqtt-topic mqtt-payload]
-       (let [[signal-type message-type id] (str/split mqtt-topic #"/")
+       (let [[_ signal-type message-type id] (str/split mqtt-topic #"/")
              kafka-topic (str kafka/prefix signal-type "-" message-type)
              data (parse-string (String. mqtt-payload "UTF-8"))
              message (condp = kafka-topic
@@ -79,15 +79,20 @@
                                       "auto.offset.reset"       "largest"
                                       "auto.commit.interval.ms" "10000"
                                       "auto.commit.enable"      "true"}
-                            c (zk/consumer c-config)
-                            messages (zk/stream-seq (zk/create-message-stream c "gdlt-lght-o" (StringDecoder. nil) (StringDecoder. nil)))]
+
+                            ;c (zk/consumer c-config)
+                            ;messages (zk/stream-seq (zk/create-message-stream c "gdlt-lght-o" (StringDecoder. nil) (StringDecoder. nil)))
+
+                            ]
 
                            (mh/subscribe (:conn mqtt) (:topics mqtt) (partial dispatch! p))
 
-                           (go (run! (partial publish! mqtt) (eduction xform messages)))
+                           ;(go (run! (partial publish! mqtt) (eduction xform messages)))
 
                            (-> component
-                               (assoc :consumer c))
+                               (assoc :producer p
+                                      ;:consumer c
+                                      ))
                            )
                       (catch Exception e
                         (log/error "ERROR in MqttKafkaBridge" e)

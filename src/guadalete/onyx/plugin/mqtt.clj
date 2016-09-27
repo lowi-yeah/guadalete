@@ -36,8 +36,6 @@
   {:lifecycle/before-task-start connect
    :lifecycle/after-task-stop   disconnect})
 
-(def ^:const topikk "nba/scores")
-
 (defrecord MqttOutput []
            ;; Read batch can generally be left as is. It simply takes care of
            ;; receiving segments from the ingress task
@@ -51,12 +49,10 @@
              ;; Messages are on the leaves :tree, as :onyx/fn is called
              ;; and each incoming segment may return n segments
              [_ {:keys [onyx.core/results mqtt/connection mqtt/topic color/mapping-fn color/type] :as event}]
-             (doseq [msg (mapcat :leaves (:tree results))]
-                    (let [c (:message msg)
-                          message ((kw->fn mapping-fn) type c)]
-                         (log/debug "mqtt/publish" topikk message)
-                         ;(mh/publish connection topikk "message" )
-                         ))
+             (doseq [segment (mapcat :leaves (:tree results))]
+                    (let [message (:message segment)]
+                         (log/debug "mqtt/publish" topic (:payload message))
+                         (mh/publish connection topic (:payload message))))
              {})
 
            (seal-resource

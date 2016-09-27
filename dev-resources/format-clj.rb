@@ -22,4 +22,4 @@ puts "result #{result}"
 
 
 
-File.write('tmp-f00.clj', result)
+File.write('tmp.clj', result)

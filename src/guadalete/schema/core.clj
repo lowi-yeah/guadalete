@@ -15,7 +15,6 @@
 (s/defschema Map
              {s/Keyword s/Any})
 
-
 ;//
 ;//   _  _ ______ _ _ ___
 ;//  | || (_-< -_) '_(_-<
@@ -29,8 +28,6 @@
               :password s/Str
               :roles    [UserRole]
               :username s/Str})
-
-
 
 ;//   _ _      _
 ;//  | (_)_ _ | |_____
@@ -116,7 +113,7 @@
 (s/defschema NodeData
              {:room-id  s/Str
               :scene-id s/Str
-              :ilk      (s/enum :signal :color :mixer :light)
+              :ilk      (s/enum :signal :color :mixer :light :constant)
               :position Vec2})
 
 (s/defschema NodeReference
@@ -127,7 +124,7 @@
 
 (s/defschema Node
              {:id       s/Str
-              :ilk      (s/enum :signal :color :mixer :light)
+              :ilk      (s/enum :signal :color :mixer :light :constant)
               :item-id  s/Str
               :position Vec2
               :links    [Link]})
@@ -175,9 +172,15 @@
                     (= (-> % (get :from) (get :emits)) :value)) ValueFlow
                :else ColorFlow))
 
+(s/defschema Room
+             {:id     s/Str
+              :name   s/Str
+              :light  [s/Str]
+              :scene  [s/Str]
+              :sensor [s/Str]})
 
 (s/defschema Rooms
-             {s/Str s/Any})                                 ; map id->Room
+             {s/Str Room})
 
 (s/defschema ColorChannel
              {:name  s/Keyword
@@ -210,7 +213,7 @@
              {(s/optional-key :room-id) s/Str
               :id                       s/Str
               :name                     s/Str
-              :type                     (s/enum :v :sv :hsv)
+              :color-type               (s/enum :v :sv :hsv)
               :transport                (s/eq :mqtt)
               :accepted?                s/Bool
               (s/optional-key :created) s/Any
@@ -256,12 +259,21 @@
              {s/Str Signal})
 
 (s/defschema Color
-             {:id         s/Str
-              :type       (s/enum :v :sv :hsv)
-              :brightness s/Num})
+             {:id                          s/Str
+              :type                        (s/enum :v :sv :hsv)
+              :brightness                  s/Num
+              (s/optional-key :saturation) s/Num
+              (s/optional-key :hue)        s/Num})
 
 (s/defschema Colors
              {s/Str Color})
+
+(s/defschema Constant
+             {:id    s/Str
+              :value s/Num})
+
+(s/defschema Constants
+             {s/Str Constant})
 
 (s/defschema Mixer
              {:id       s/Str
@@ -271,10 +283,12 @@
              {s/Str Mixer})
 
 (s/defschema Items
-             {:light  [Light]
-              :mixer  [Mixer]
-              :signal [Signal]
-              :color  [Color]})
+             {:light    [Light]
+              :mixer    [Mixer]
+              :signal   [Signal]
+              :color    [Color]
+              :constant [Constant]
+              })
 
 (s/defschema Room
              {:id     s/Str
@@ -320,6 +334,9 @@
 (def coerce-color
   (coerce/coercer Color coerce/json-coercion-matcher))
 
+(def coerce-constant
+  (coerce/coercer Constant coerce/json-coercion-matcher))
+
 (def coerce-scenes
   (coerce/coercer [Scene] coerce/json-coercion-matcher))
 
@@ -332,6 +349,7 @@
              :light ((coerce/coercer Light coerce/json-coercion-matcher) item)
              :scene ((coerce/coercer Scene coerce/json-coercion-matcher) item)
              :signal ((coerce/coercer Signal coerce/json-coercion-matcher) item)
+             :constant ((coerce/coercer Constant coerce/json-coercion-matcher) item)
              :color ((coerce/coercer Color coerce/json-coercion-matcher) item)
              (log/error (str "Cannot coerce item: " item ". Dunno item type: " type))))
 

@@ -1,5 +1,6 @@
 (ns guadalete.datastructures.flow
     (:require
+      [clojure.set :as set]
       [ubergraph.core :as uber]
       [ubergraph.alg :as alg]
       [taoensso.timbre :as log]
@@ -107,23 +108,6 @@
              (into [])))
 
 
-(s/defn ^:always-validate dissect-node :- [gs/NodeDescription]
-        "Takes a Node (ie NOT a ubergraph node) and dissects its inner workings.
-        Returns a map of of ubergraph-node descriptions.
-        Depending on the type of node (Signal, Mixer, etc…) different approaches need to be taken.
-        Source & Sink nodes (ie. nodes that have only incoming OR only outging links) are pretty easy to handle:
-        Take the id of the node as ns and the id of the inlet/outlet as name,
-        and return (keyword ns name) as the graph-node id"
-        [{:keys [node item]}]
-        (log/debug "dissect-node" node item)
-        (let [
-              ;node-record (node/build node item)
-              ]
-
-             ;(log/debug "node-record" node-record)
-             ;(log/debug "result" result)
-             []))
-
 (s/defn ^:always-validate load-item
         [node :- gs/Node
          items :- gs/Items]
@@ -149,11 +133,35 @@
                  (assoc-in [:from :item-id] from-item)
                  (assoc-in [:to :item-id] to-item))))
 
+(s/defn ^:always-validate filter-linked-nodes
+        "helper function for removing all nodes that are not linked correctly.
+        Correct in this context means that ALL incoming & outgoing links are connected."
+        [flows :- [gs/FlowReference]
+         nodes :- [gs/Node]]
+        (let [flow-links (->> flows
+                              (map (fn [{:keys [from to] :as flow}]
+                                       (let [in (keyword (:node-id from) (:id from))
+                                             out (keyword (:node-id to) (:id to))]
+                                            [in out])))
+                              (apply concat)
+                              (into #{}))
+              filtered-nodes (->> nodes
+                                  (filter (fn [{:keys [links] :as node}]
+                                              (let [node-links (->> links
+                                                                    (map (fn [link]
+                                                                             (keyword (:id node) (:id link))))
+                                                                    (into #{}))
+                                                    difference (set/difference node-links flow-links)]
+                                                   (empty? difference)))))]
+             filtered-nodes))
+
 (s/defn ^:always-validate assemble-nodes :- gs/NodeAndEdgeDescription
         [nodes :- [gs/Node]
-         items :- gs/Items]
+         items :- gs/Items
+         flows :- [gs/FlowReference]]
         (let [assembly {:nodes [] :edges []}
               graph-nodes (->> nodes
+                               (filter-linked-nodes flows)
                                (map #(load-item % items))
                                (map #(node/dissect %))
                                (reduce (fn [result description]
@@ -161,7 +169,6 @@
                                                (assoc :nodes (concat (:nodes result) (:nodes description)))
                                                (assoc :edges (concat (:edges result) (:edges description)))))
                                        assembly))]
-             (log/debug "graph-nodes\n" graph-nodes)
              graph-nodes))
 
 
@@ -200,13 +207,12 @@
 (s/defn ^:always-validate assemble-scene
         [scene :- gs/Scene
          items :- gs/Items]
-        (let [{:keys [nodes edges]} (assemble-nodes (vals (:nodes scene)) items)
+        (let [{:keys [nodes edges]} (assemble-nodes (vals (:nodes scene)) items (vals (:flows scene)))
               outer-edges (assemble-edges (vals (:flows scene)) (:nodes scene) items)
               edges* (concat edges outer-edges)]
              {:scene-id (:id scene)
               :nodes    nodes
               :edges    edges*}))
-
 
 (s/defn ^:always-validate assemble
         [scenes :- [gs/Scene]

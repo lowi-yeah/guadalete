@@ -7,7 +7,7 @@
       (let [tenancy-id (str (str (java.util.UUID/randomUUID)))]
            (log/info "onyx tenancy-id:" tenancy-id)
            {:use-env?    false
-            :n-peers     16
+            :n-peers     32
             :peer-config {:zookeeper/address                     (env/get-value :zookeeper/address)
                           :onyx.messaging/impl                   (env/get-value :onyx.messaging/impl)
                           :onyx.peer/job-scheduler               (env/get-value :onyx.peer/job-scheduler)

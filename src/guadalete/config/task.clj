@@ -39,5 +39,8 @@
        ;:redis/prefix          (env/get-value :redis/prefix)
        ;:redis/namespace       (env/get-value :redis/namespace)
        :redis/signal-prefix   "sgnl"
-       :redis/namespace       "gdlt"
-       })
+       :redis/namespace       "gdlt"})
+
+(defn constant []
+      {:onyx/batch-timeout 4000
+       :onyx/batch-size    1})

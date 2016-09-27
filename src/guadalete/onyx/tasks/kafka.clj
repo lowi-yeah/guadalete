@@ -48,6 +48,9 @@
 (defn- producer
        "Helper for creating task that produce kafka messages."
        [{:keys [task-name group-id topic]}]
+
+       (log/debug "KAFFKA producer" task-name group-id topic)
+
        {:task   {:task-map   (merge
                                (onyx-defaults)
                                (task-config/kafka-producer)

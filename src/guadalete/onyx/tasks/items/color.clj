@@ -4,7 +4,7 @@
       [schema.core :as s]
       [onyx.schema :as os]
       [clj-time.core :as t]
-      [onyx.static.uuid :refer [random-uuid]]
+      [guadalete.utils.util :as util]
       [guadalete.config.onyx :refer [onyx-defaults]]
       [guadalete.onyx.tasks.identity :refer [identity-task log-task dissoc-task dissoc-and-log-task]]))
 
@@ -23,7 +23,6 @@
   {:lifecycle/before-task-start inject-channel})
 
 (defn assoc-channel [channel segment]
-      ;(log/debug "assoc-channel" segment channel)
       (assoc segment :channel channel))
 
 (s/defn in
@@ -49,26 +48,34 @@
 ;//  | | ' \(_-< / _` / -_)
 ;//  |_|_||_/__/_\__,_\___|
 ;//
+
+;; WINDOW
+;; ————————————————————
 (defn color-aggregation-fn-init [window] {})
 (defn color-aggregation-fn [window state segment] segment)
 (defn color-super-aggregation [window state-1 state-2] (into state-1 state-2))
 (defn color-aggregation-apply-log [window state v]
       (let [{:keys [channel value at] :as segment} v]
            (clojure.core/assoc state channel {:value value :at at})))
-(def map-color
+
+(def aggregate-color
   {:aggregation/init                 color-aggregation-fn-init
    :aggregation/create-state-update  color-aggregation-fn
    :aggregation/apply-state-update   color-aggregation-apply-log
    :aggregation/super-aggregation-fn color-super-aggregation})
 
+;; LIFECYCLE
+;; ————————————————————
 (defn inject-state
       [{:keys [onyx.core/windows-state onyx.core/params]} _lifecycle]
       (let [state (-> @windows-state (first) (get-in [:state 1]))]
            {:onyx.core/params (conj params state)}))
 
-(def color-lifecycle-calls
+(def inner-lifecycle-calls
   {:lifecycle/before-batch inject-state})
 
+;; FUNCTION
+;; ————————————————————
 (defn make-color [state segment]
       (let [color (-> {:brightness (or (get-in state [:brightness :data]) 0)
                        :saturation (or (get-in state [:saturation :data]) 0)
@@ -76,26 +83,26 @@
                       (assoc (:channel segment) (:data segment)))]
            (merge segment color)))
 
+;; TASK
+;; ————————————————————
 (s/defn inner
         [{:keys [name] :as attributes}]
-        (let [window-id (keyword (str "w-" (subs (str random-uuid) 4)))
+        (let [window-id (keyword (str "w-" (util/uuid)))
               task-map (merge
                          (onyx-defaults)
                          {:onyx/name           name
                           :onyx/fn             ::make-color
                           :onyx/type           :function
                           :onyx/uniqueness-key :at
-                          :onyx/doc            "Logs the color to the console for debugging"})
-
+                          :onyx/doc            "Combines th incoming color channels into a color."})
               windows [{:window/id          window-id
                         :window/task        name
                         :window/type        :global
-                        :window/aggregation ::map-color
+                        :window/aggregation ::aggregate-color
                         :window/window-key  :at
                         :map-key            :id}]
-
               lifecycles [{:lifecycle/task  name
-                           :lifecycle/calls ::color-lifecycle-calls}]]
+                           :lifecycle/calls ::inner-lifecycle-calls}]]
              {:task   {:task-map   task-map
                        :windows    windows
                        :lifecycles lifecycles}

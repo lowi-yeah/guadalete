@@ -20,6 +20,7 @@
                   (log/info "Starting component: mqtt")
                   (log/debug "\t mqtt-broker:" mqtt-broker)
                   (log/debug "\t mqtt-id:" mqtt-id)
+                  (log/debug "\t mqtt-topics:" mqtt-topics)
 
                   (let [conn (mh/connect mqtt-broker mqtt-id)]
                        ;(log/debug "\t connection" conn)

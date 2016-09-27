@@ -69,9 +69,10 @@
 (s/defn ^:always-validate all-scenes :- [gs/Scene]
         "Retrieves all scenes from all rooms"
         [conn]
-        (-> (r/table "scene")
-            (r/run conn)
-            (gs/coerce-scenes)))
+        (let [scenes (-> (r/table "scene")
+                         (r/run conn))]
+             (log/debug "all scenes" (into [] scenes))
+             (gs/coerce-scenes scenes)))
 
 (defn all-lights
       "Retrieves all scenes from all rooms"
@@ -125,13 +126,14 @@
                             :light (gs/coerce-light item)
                             :mixer (gs/coerce-mixer item)
                             :signal (gs/coerce-signal item)
-                            :color (gs/coerce-color item))))))
+                            :color (gs/coerce-color item)
+                            :constant (gs/coerce-constant item))))))
 
 (defn all-items
       "Retrieves all 'items' from the database.
       An item, in this context is anything that can be used in a PD graph, eg. lights, colors, signals, etc…"
       [conn]
-      (let [items [:light :mixer :signal :color]]
+      (let [items [:light :mixer :signal :color :constant]]
            (->> items
                 (map (fn [i] [i (->> i
                                      (all conn)

@@ -16,9 +16,8 @@
 (s/defn hsv->rgb
         "Maps a given Color"
         [type :- (s/enum :v :sv :hsv)
-         {:keys [brightness saturation hue] :as color} :- gs/SimpleColor]
-        (let [
-              hsva* (col/hsva hue saturation brightness 1)
+         {:keys [brightness saturation hue] :as segment}]
+        (let [hsva* (col/hsva hue saturation brightness 1)
               rgba* (col/as-rgba hsva*)
               b (int (math/map-interval-clamped brightness 0 1 0 255))
               s (int (math/map-interval-clamped saturation 0 1 0 255))
@@ -30,12 +29,13 @@
                     :sv (str [b s])
                     :hsv (str [r g b]))))
 
-(s/defn prepare-mqtt
+(s/defn ^:always-validate prepare-mqtt
         [id :- s/Str
          color-type :- (s/enum :v :sv :hsv)
          segment]
-        {:message (hsv->rgb color-type segment)
-         :key     id})
+        (let [message (hsv->rgb color-type segment)]
+             {:payload message
+              :key     id}))
 
 (s/defn ^:always-validate prepare-for-transport
         "Task function for :light/in."
@@ -43,7 +43,6 @@
          transport :- (s/enum :dmx :mqtt)
          color-type :- (s/enum :v :sv :hsv)
          segment]
-
         (condp = transport
                :mqtt (prepare-mqtt id color-type segment)
                :dmx segment))
@@ -84,5 +83,10 @@
         (condp = (:transport light)
                :dmx (async/publish-task (:name light))
                :mqtt (do
-                       (log/debug "transport MQTT" light)
-                       (kafka-tasks/light-producer (:name light)))))
+                       ;(kafka-tasks/light-producer (:name light))
+                       (mqtt/publish (:name light)
+                                     (:topic light)
+                                     (:client-id light)
+                                     (:broker light)
+                                     (:color-fn light)
+                                     (:color-type light)))))

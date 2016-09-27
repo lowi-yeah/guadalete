@@ -21,7 +21,15 @@
                      (uber/add-nodes-with-attrs* (->> (:nodes graph-description)
                                                       (map (fn [n] [(:id n) (:attrs n)]))))
                      (uber/add-edges* (->> (:edges graph-description)
-                                           (map (fn [e] [(:from e) (:to e) (:attrs e)])))))]
+                                           (map (fn [e] [(:from e) (:to e) (:attrs e)])))))
+
+             connected-components (alg/connected-components graph)
+             ]
+
+            (log/debug "made graph")
+            (uber/pprint graph)
+            (log/debug "connected components" connected-components)
+
             {:scene-id (keyword (:scene-id graph-description))
              :graph    graph}))
 

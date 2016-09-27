@@ -30,9 +30,19 @@
              {:id    id
               :attrs attributes}))
 
+(s/defn ^:always-validate dissect-constant :- gs/NodeAndEdgeDescription
+        "Dissect a Constant.
+        Easy as… Becuse the constant but consists of one source-node emitting values"
+        [node :- gs/Node
+         item :- gs/Constant]
+        (let [link (first (:links node))
+              uber-node (node-description node item (:id link))]
+             {:nodes [uber-node]
+              :edges []}))
+
 (s/defn ^:always-validate dissect-signal :- gs/NodeAndEdgeDescription
         "Dissect a Signal.
-        Easy as… Becuse the signal but consists of one source-node emitting signal values"
+        Easy as… Becuse the signal but consists of one source-node emitting values"
         [node :- gs/Node
          item :- gs/Signal]
         (let [link (first (:links node))
@@ -41,10 +51,19 @@
              {:nodes [uber-node]
               :edges []}))
 
-(s/defn dissect-mixer :- gs/NodeAndEdgeDescription
+(s/defn ^:always-validate dissect-passthrough-node :- gs/NodeAndEdgeDescription
+        "Passthrough nodes are nodes that have incoming as well as outging links
+        — ie. they are neither sources nor sinks. All nodes of this kind
+        (at least up to this point) share a common structure: When dissected,
+        an additinal 'inner' node get created. In addition to the incoming & outgoing links, that is.
+        All inlets are being connected to the inner node which in turn is connected to the out-node.
+                  in ———
+                        |
+                  [..]————> inner ———> out
+                        |
+                  in ———  "
         [node :- gs/Node
-         item :- gs/Signal]
-        (log/debug "dissect-mixer" node item)
+         item]
         (let [in-nodes (->> (:links node)
                             (filter inlet?)
                             (map #(node-description node item (:id %))))
@@ -63,51 +82,30 @@
                                       {:from (:id inner-node)
                                        :to   (:id outlet)})))
 
-              uber-nodes (concat in-nodes inner-node out-nodes)
-              uber-edges (conj in-edges out-edges)]
-
+              uber-nodes (->>
+                           (concat in-nodes [inner-node] out-nodes)
+                           (into []))
+              uber-edges (->>
+                           (concat in-edges out-edges)
+                           (into []))]
              {:nodes uber-nodes :edges uber-edges}))
 
-(s/defn dissect-color :- [gs/NodeDescription]
+(s/defn ^:always-validate dissect-mixer :- gs/NodeAndEdgeDescription
+        [node :- gs/Node
+         item :- gs/Mixer]
+        (dissect-passthrough-node node item))
+
+(s/defn ^:always-validate dissect-color :- gs/NodeAndEdgeDescription
         [node :- gs/Node
          item :- gs/Color]
-        (let [in-nodes (->> (:links node)
-                            (filter inlet?)
-                            (map #(node-description node item (:id %))))
-              inner-node (node-description node item "inner")
-              out-nodes (->> (:links node)
-                             (filter outlet?)
-                             (map #(node-description node item (:id %))))
-
-              in-edges (->> in-nodes
-                            (map (fn [inlet]
-                                     {:from (:id inlet)
-                                      :to   (:id inner-node)})))
-
-              out-edges (->> out-nodes
-                             (map (fn [outlet]
-                                      {:from (:id inner-node)
-                                       :to   (:id outlet)})))
-
-              uber-nodes (concat in-nodes [inner-node] out-nodes)
-              uber-edges (concat in-edges out-edges)]
-
-             (log/debug "dissect-color" (pretty uber-nodes))
-
-             {:nodes uber-nodes :edges uber-edges}))
+        (dissect-passthrough-node node item))
 
 (s/defn dissect-light :- [gs/NodeDescription]
         [node :- gs/Node
          item :- gs/Light]
-        (log/debug "dissect-light" node item)
         (let [link (first (:links node))
               link-node (node-description node item (:id link))
               sink-node (node-description node item "sink")
-
-              _ (log/debug "\t link" link)
-              _ (log/debug "\t link-node" link-node)
-              _ (log/debug "\t sink-node" sink-node)
-
               uber-nodes [link-node sink-node]
               uber-edges [{:from (:id link-node)
                            :to   (:id sink-node)}]]
@@ -118,12 +116,17 @@
           "Given a node, return the concrete type to perform operations against."
           (fn [{:keys [node]}] (:ilk node)))
 
+(defmethod dissect :constant
+           [{:keys [node item]}]
+           (dissect-constant node item))
+
 (defmethod dissect :signal
            [{:keys [node item]}]
            (dissect-signal node item))
 
 (defmethod dissect :mixer
            [{:keys [node item]}]
+           (log/debug "dissect-mixer" node item)
            (dissect-mixer node item))
 
 (defmethod dissect :color

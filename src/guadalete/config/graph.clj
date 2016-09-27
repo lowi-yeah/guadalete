@@ -23,7 +23,7 @@
         :transport  (:transport item)
         :light-id   (:id item)
         :task       (task* :light :in)
-        :color-type (:type item)})
+        :color-type (:color-type item)})
 
 (defn- light-sink-attributes
        [type node item]
@@ -33,7 +33,7 @@
                    :transport  (:transport item)
                    :task       (task* :light :out)
                    :color-fn   :guadalete.onyx.tasks.items.light/hsv->rgb
-                   :color-type (:type item)}
+                   :color-type (:color-type item)}
              transport-specific (condp = (:transport item)
                                        :mqtt {:mqtt-id   (:id item)
                                               :client-id (:id node)
@@ -47,12 +47,19 @@
         "Look up the attributes reqired to perform the task for a given ubergraph-node-type"
         [type node item]
         (condp = type
+
+               :constant/out {:type        type
+                              :name        (make-id (:id item) (name type))
+                              :task        (task* :constant :in)
+                              :constant-id (:id item)
+                              :id          (:id node)
+                              :value       (:value item)}
+
                :signal/out {:type      type
                             :name      (make-id (:id item) (name type))
                             :task      (task* :signal :in)
                             :signal-id (:id item)
-                            :id        (:id node)
-                            }
+                            :id        (:id node)}
 
                :mixer/in-0 {:type    type
                             :name    (make-id (:id item) (name type))
