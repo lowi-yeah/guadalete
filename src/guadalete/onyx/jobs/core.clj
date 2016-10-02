@@ -39,16 +39,18 @@
       (with-open
         [db-conn (db/connect! rethinkdb)]
         (let [
-              scenes (db/all-scenes db-conn)
-              items (db/all-items db-conn)
-              graph-jobs (->> (flow/assemble scenes items)
-                              (map make-graph)
-                              (scene-jobs/from-graphs))
+              ;scenes (db/all-scenes db-conn)
+              ;items (db/all-items db-conn)
+              ;graph-jobs (->> (flow/assemble scenes items)
+              ;                (map make-graph)
+              ;                (scene-jobs/from-graphs))
               signal-config (base-jobs/signal-config-consumer)
-              signal-value (base-jobs/signal-timeseries-consumer)
+              ;signal-value (base-jobs/signal-timeseries-consumer)
               light-config (base-jobs/light-config-consumer)
-              all-jobs (conj graph-jobs signal-value signal-config light-config)
+              ;all-jobs (conj graph-jobs signal-value signal-config light-config)
               ;all-jobs (conj () signal-value signal-config light-config)
+              all-jobs (conj () signal-config light-config)
+              ;all-jobs (conj () signal-config)
               ;all-jobs []
               ]
              all-jobs)))

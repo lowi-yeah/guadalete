@@ -204,10 +204,16 @@
               :transport    (s/eq :dmx)})
 
 (s/defschema MqttLightConfig
-             {:name s/Str
-              :type (s/enum "v" "sv" "hsv")
+             {:data {:color-type            (s/enum "v" "sv" "hsv")
+                     (s/optional-key :name) s/Str}
               :id   s/Str
               :at   s/Num})
+
+(s/defschema LightConfig
+             {:color-type (s/enum :v :sv :hsv)
+              :name       (s/maybe s/Str)
+              :id         s/Str
+              :transport  (s/enum :mqtt :dmx)})
 
 (s/defschema MqttLight
              {(s/optional-key :room-id) s/Str
@@ -244,6 +250,21 @@
 
 (s/defschema Scenes
              {s/Str Scene})
+
+;; This is the configuration of a signal used internally.
+(s/defschema SignalConfig
+             {:name s/Str
+              :type (s/enum "analog" "some other kind of signal")
+              :id   s/Str
+              :at   s/Num})
+
+;; This is the configuration of a signal as sent via MQTT.
+(s/defschema MqttSignalConfig
+             {:data {:name s/Str
+                     :type (s/enum "analog" "some other kind of signal")}
+              :id   s/Str
+              :at   s/Num})
+
 
 (s/defschema Signal
              {:name                     s/Str

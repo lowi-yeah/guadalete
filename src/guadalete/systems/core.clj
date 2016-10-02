@@ -12,7 +12,6 @@
       [guadalete.systems.kafka :refer [new-kafka]]
       [guadalete.systems.mqtt.core :refer [new-mqtt]]
       [guadalete.systems.async :refer [new-async]]
-      [guadalete.systems.mqtt-kafka-bridge :refer [mqtt-kafka-bridge]]
       [guadalete.systems.rethinkdb.core :refer [new-rethinkdb]]
       [guadalete.systems.kafka-consumer.core :refer [new-kafka-consumer]]
       [guadalete.systems.kafka-async :refer [new-kafka-async-pipe]]
@@ -21,8 +20,7 @@
       [guadalete.systems.bookkeeper :refer [multi-bookie-server]]
       [guadalete.config
        [core :as config]
-       [kafka :as kafka-config]]
-      ))
+       [kafka :as kafka-config]]))
 
 
 (defsystem dev-system [
@@ -36,7 +34,6 @@
                        :bookkeeper (component/using (multi-bookie-server (:env-config (config/onyx))) [:zookeeper])
                        :kafka (new-kafka (config/kafka))
                        :mqtt (new-mqtt (config/mqtt))
-                       :mqtt-kafkabridge (component/using (mqtt-kafka-bridge) [:kafka :mqtt])
                        :onyx (onyx (config/onyx))
 
                        ;//     _     _

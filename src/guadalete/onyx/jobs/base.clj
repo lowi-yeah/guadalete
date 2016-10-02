@@ -30,16 +30,33 @@
            {:name :signal/value-logger
             :job  job}))
 
+(s/defn ^:always-validate transform-signal-config :- gs/SignalConfig
+        [segment :- gs/MqttSignalConfig]
+        (-> segment
+            (assoc :name (get-in segment [:data :name]))
+            (assoc :type (get-in segment [:data :type]))
+            (dissoc :data)))
+
 (defn signal-config-consumer []
       (let [
-            workflow [
-                      [:read-from-kafka :write-to-rethink]
-                      ;[:read-from-kafka :log]
-                      ;[:log :write-to-rethink]
-                      ]
-            tasks [(kafka-tasks/signal-config-consumer :read-from-kafka)
-                   ;(log-task :log "signal-config-consumer")
+            workflow [[:read-from-kafka :transform-signal-config]
+                      [:transform-signal-config :write-to-rethink]]
+            tasks [
+                   ;; kafka in
+                   (kafka-tasks/signal-config-consumer :read-from-kafka)
+
+                   ;; transform
+                   {:task   {:task-map (merge (onyx-defaults)
+                                              {:onyx/name   :transform-signal-config
+                                               :onyx/plugin :onyx.peer.function/function
+                                               :onyx/fn     ::transform-signal-config
+                                               :onyx/type   :function
+                                               :onyx/doc    "Transforms incoming signal configuration messages."})}
+                    :schema {:task-map os/TaskMap}}
+
+                   ;; rethinkDB out
                    (rethink-tasks/output :write-to-rethink {:task-opts (onyx-defaults) :lifecycle-opts (merge (taks-config/rethink) {:rethinkdb/table "signal"})})]
+
             job (-> empty-job
                     (add-tasks tasks)
                     (assoc :workflow workflow))]
@@ -51,12 +68,18 @@
 ;//  | | / _` | ' \  _| / _/ _ \ ' \|  _| / _` |
 ;//  |_|_\__, |_||_\__| \__\___/_||_|_| |_\__, |
 ;//      |___/                            |___/
-(s/defn transform-config
+(s/defn ^:always-validate transform-light-config :- gs/LightConfig
         [{:keys [name type] :as segment} :- gs/MqttLightConfig]
-        (-> segment
-            (assoc :transport :mqtt)
-            (dissoc :at :name)
-            ))
+        (let [segment* (-> segment
+                           (assoc :transport :mqtt)
+                           (assoc :color-type (-> segment
+                                                  (get-in [:data :color-type])
+                                                  (keyword)))
+                           (assoc :name (get-in segment [:data :name]))
+                           (dissoc :at :data))]
+             (log/debug "segment" segment)
+             (log/debug "segment*" segment*)
+             segment*))
 
 (defn light-config-consumer []
       (let [
@@ -66,7 +89,7 @@
 
                    {:task   {:task-map (merge {:onyx/name   :light-config-transform
                                                :onyx/plugin :onyx.peer.function/function
-                                               :onyx/fn     ::transform-config
+                                               :onyx/fn     ::transform-light-config
                                                :onyx/type   :function
                                                :onyx/doc    "Transforms incoming light configuration messages."}
                                               (onyx-defaults))}
