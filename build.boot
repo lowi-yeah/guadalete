@@ -24,6 +24,7 @@
                   [thi.ng/color "1.2.0"]
                   [clojurewerkz/statistiker "0.1.0-SNAPSHOT"]
                   [ubergraph "0.2.3"]
+                  [thi.ng/tweeny "0.1.0-SNAPSHOT"]
                   [forecast-clojure "1.0.3"]
                   [net.eliosoft/artnet4j "0001"]
                   [overtone/osc-clj "0.9.0"]
@@ -83,7 +84,7 @@
 
 (def mqtt-dev-config
   {:mqtt/broker "tcp://mosquitto1:1883"
-   :mqtt/id     "guadalete-client"
+   :mqtt/id     "guadalete-core-client"
    :mqtt/topics {"/sgnl/#"  0
                  "/swtch/#" 0
                  "/lght/c/+" 0}})

@@ -1,8 +1,10 @@
 (ns guadalete.config.graph
     (:require
+      [clojure.string :as str]
       [taoensso.timbre :as log]
       [schema.core :as s]
       [onyx.schema :as os]
+      [onyx.static.uuid :refer [random-uuid]]
       [guadalete.onyx.tasks.mqtt :as mqtt]
       [guadalete.config.core :as config]))
 
@@ -27,7 +29,6 @@
 
 (defn- light-sink-attributes
        [type node item]
-       (log/debug "light-sink-attributes | type" type)
        (let [base {:type       type
                    :name       (make-id (:id item) (name type))
                    :transport  (:transport item)
@@ -36,18 +37,21 @@
                    :color-type (:color-type item)}
              transport-specific (condp = (:transport item)
                                        :mqtt {:mqtt-id   (:id item)
-                                              :client-id (:id node)
+                                              :client-id (-> (random-uuid)
+                                                             (str)
+                                                             (str/reverse)
+                                                             (subs 0 22)
+                                                             )
                                               :broker    (:mqtt-broker (config/mqtt))
                                               :topic     (mqtt/make-topic (:id item) type)}
                                        :dmx {:channels (:channels :item)})]
             (merge base transport-specific)))
 
-
 (s/defn attributes-for-type
         "Look up the attributes reqired to perform the task for a given ubergraph-node-type"
         [type node item]
+        (log/debug "attributes-for-type" type)
         (condp = type
-
                :constant/out {:type        type
                               :name        (make-id (:id item) (name type))
                               :task        (task* :constant :in)
@@ -55,9 +59,15 @@
                               :id          (:id node)
                               :value       (:value item)}
 
+               :signal/read {:type      type
+                             :name      (make-id (:id item) (name type))
+                             :task      (task* :signal :read)
+                             :signal-id (:id item)
+                             :id        (:id node)}
+
                :signal/out {:type      type
                             :name      (make-id (:id item) (name type))
-                            :task      (task* :signal :in)
+                            :task      (task* :signal :coerce)
                             :signal-id (:id item)
                             :id        (:id node)}
 
@@ -79,6 +89,26 @@
                :mixer/out {:type type
                            :name (make-id (:id item) (name type))
                            :task (task* :mixer :out)}
+
+               :transition/in {:type type
+                               :name (make-id (:id item) (name type))
+                               :task (task* :transition :in)}
+
+               :transition/delay {:type  type
+                                  :name  (make-id (:id item) (name type))
+                                  :task  (task* :transition :delay!)
+                                  :delay (:delay item)}
+
+               :transition/ease {:type     type
+                                 :name     (make-id (:id item) (name type))
+                                 :task     (task* :transition :ease!)
+                                 :easing   (:easing item)
+                                 :duration (:duration item)
+                                 :delay    (:delay item)}
+
+               :transition/out {:type type
+                                :name (make-id (:id item) (name type))
+                                :task (task* :transition :out)}
 
                :color/brightness {:type    type
                                   :name    (make-id (:id item) (name type))

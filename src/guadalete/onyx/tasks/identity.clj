@@ -33,9 +33,11 @@
 ;//  |_\___\__, |
 ;//        |___/
 (defn log [called-by segment]
-      (let [
-            data (:data segment)
-            δ (- (System/currentTimeMillis) (:at segment))]
+      (let [data (:data segment)
+            at* (if (string? (:at segment))
+                  (read-string (:at segment))
+                  (:at segment))
+            δ (- (System/currentTimeMillis) at*)]
            (log/debug (str called-by ": " segment " - " δ "ms"))
            segment))
 

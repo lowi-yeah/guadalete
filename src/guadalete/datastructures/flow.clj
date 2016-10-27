@@ -8,8 +8,7 @@
       [guadalete.config.graph :refer [attributes-for-type]]
       [schema.core :as s]
       [guadalete.schema.core :as gs]
-      [guadalete.graph.node :as node])
-    )
+      [guadalete.graph.node :as node]))
 
 
 ;; # How to make the flow-graph

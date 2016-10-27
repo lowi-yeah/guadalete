@@ -63,7 +63,6 @@
              (if connection
                (mh/disconnect connection))))
 
-
 ;; Builder function for your output plugin.
 ;; Instantiates a record.
 ;; It is highly recommended you inject and pre-calculate frequently used data

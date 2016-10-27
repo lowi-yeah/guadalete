@@ -110,10 +110,13 @@
 (s/defschema Link
              (s/conditional in-link? InLink :else OutLink))
 
+(s/defschema NodeType
+             (s/enum :color :constant :light :mixer :room :scene :signal :transition))
+
 (s/defschema NodeData
              {:room-id  s/Str
               :scene-id s/Str
-              :ilk      (s/enum :signal :color :mixer :light :constant)
+              :ilk      NodeType
               :position Vec2})
 
 (s/defschema NodeReference
@@ -124,7 +127,7 @@
 
 (s/defschema Node
              {:id       s/Str
-              :ilk      (s/enum :signal :color :mixer :light :constant)
+              :ilk      NodeType
               :item-id  s/Str
               :position Vec2
               :links    [Link]})
@@ -197,7 +200,7 @@
              {:room-id      s/Str
               :id           s/Str
               :name         s/Str
-              :type         (s/enum :v :sv :hsv)
+              :color-type   (s/enum :v :sv :hsv)
               :num-channels s/Num
               :channels     [ColorChannel]
               :color        SimpleColor
@@ -207,7 +210,7 @@
              {:data {:color-type            (s/enum "v" "sv" "hsv")
                      (s/optional-key :name) s/Str}
               :id   s/Str
-              :at   s/Num})
+              :at   s/Str})
 
 (s/defschema LightConfig
              {:color-type (s/enum :v :sv :hsv)
@@ -254,16 +257,16 @@
 ;; This is the configuration of a signal used internally.
 (s/defschema SignalConfig
              {:name s/Str
-              :type (s/enum "analog" "some other kind of signal")
+              :type (s/enum "analog" "binary" "some other kind of signal")
               :id   s/Str
               :at   s/Num})
 
 ;; This is the configuration of a signal as sent via MQTT.
 (s/defschema MqttSignalConfig
              {:data {:name s/Str
-                     :type (s/enum "analog" "some other kind of signal")}
+                     :type (s/enum "analog" "binary" "some other kind of signal")}
               :id   s/Str
-              :at   s/Num})
+              :at   s/Str})
 
 
 (s/defschema Signal
@@ -303,13 +306,25 @@
 (s/defschema Mixers
              {s/Str Mixer})
 
+
+(s/defschema Transition
+             {:id       s/Str
+              :duration s/Num
+              :delay    s/Num
+              :easing   (s/enum :linear :smooth :ease-in :ease-out)})
+
+{:delay 25600, :duration 14100, :easing "ease-in", :id "8b3dbdab-8d36-4085-a983-7570d0acc42d"}
+
+(s/defschema Transitions
+             {s/Str Transition})
+
 (s/defschema Items
-             {:light    [Light]
-              :mixer    [Mixer]
-              :signal   [Signal]
-              :color    [Color]
-              :constant [Constant]
-              })
+             {:light      [Light]
+              :mixer      [Mixer]
+              :signal     [Signal]
+              :color      [Color]
+              :constant   [Constant]
+              :transition [Transition]})
 
 (s/defschema Room
              {:id     s/Str
@@ -317,7 +332,6 @@
               :light  [s/Str]
               :scene  [s/Str]
               :sensor [s/Str]})
-
 
 ;//                      _
 ;//   __ _ _ _ __ _ _ __| |_
@@ -343,23 +357,14 @@
 ;//  / _/ _ \ -_) '_(_-< / _ \ ' \
 ;//  \__\___\___|_| /__/_\___/_||_|
 ;//
-(def coerce-light
-  (coerce/coercer Light coerce/json-coercion-matcher))
-
-(def coerce-mixer
-  (coerce/coercer Mixer coerce/json-coercion-matcher))
-
-(def coerce-signal
-  (coerce/coercer Signal coerce/json-coercion-matcher))
-
-(def coerce-color
-  (coerce/coercer Color coerce/json-coercion-matcher))
-
-(def coerce-constant
-  (coerce/coercer Constant coerce/json-coercion-matcher))
-
-(def coerce-scenes
-  (coerce/coercer [Scene] coerce/json-coercion-matcher))
+;(defn coerce-signal-config
+;      [data]
+;      (log/debug "coerce-signal-config" data)
+;      ((coerce/coercer SignalConfig coerce/json-coercion-matcher) data))
+;
+;(defn coerce-light-config
+;      [data]
+;      ((coerce/coercer LightConfig coerce/json-coercion-matcher) data))
 
 
 (defn coerce!
@@ -371,6 +376,8 @@
              :scene ((coerce/coercer Scene coerce/json-coercion-matcher) item)
              :signal ((coerce/coercer Signal coerce/json-coercion-matcher) item)
              :constant ((coerce/coercer Constant coerce/json-coercion-matcher) item)
+             :mixer ((coerce/coercer Mixer coerce/json-coercion-matcher) item)
+             :transition ((coerce/coercer Transition coerce/json-coercion-matcher) item)
              :color ((coerce/coercer Color coerce/json-coercion-matcher) item)
              (log/error (str "Cannot coerce item: " item ". Dunno item type: " type))))
 
@@ -378,3 +385,18 @@
       [coll type]
       (->> coll
            (map #(coerce! % type))))
+
+;//   _ _               _
+;//  (_) |_ ___ _ __   | |_ _  _ _ __ ___ ___
+;//  | |  _/ -_) '  \  |  _| || | '_ \ -_)_-<
+;//  |_|\__\___|_|_|_|  \__|\_, | .__\___/__/
+;//                         |__/|_|
+(def item-types
+  [:color
+   :constant
+   :light
+   :mixer
+   :room
+   :scene
+   :signal
+   :transition])

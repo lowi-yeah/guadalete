@@ -23,13 +23,13 @@
 (s/defn make-task :- os/TaskMap
         [graph
          node-id :- s/Keyword]
-        (log/debug "make-task" node-id)
+        ;(log/debug "make-task" node-id)
         (let [attrs (uber/attrs graph node-id)
-              ;_ (log/debug "\t attrs" attrs)
+              _ (log/debug "\t attrs" attrs)
               fn-symbol (symbol (namespace (:task attrs)) (name (:task attrs)))
-              ;_ (log/debug "\t fn-symbol" fn-symbol)
+              _ (log/debug "\t fn-symbol" fn-symbol)
               function (resolve fn-symbol)
-              ;_ (log/debug "\t function" function)
+              _ (log/debug "\t function" function)
               task-map (function attrs)]
              task-map))
 

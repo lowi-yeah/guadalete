@@ -17,12 +17,12 @@
 (defn signal-timeseries-consumer []
       (let [
             workflow [
-                      [:read-from-kafka :write-to-redis]
-                      ;[:read-from-kafka :log]
-                      ;[:log :write-to-redis]
+                      ;[:read-from-kafka :write-to-redis]
+                      [:read-from-kafka :log]
+                      [:log :write-to-redis]
                       ]
             tasks [(kafka-tasks/signal-value-consumer :read-from-kafka "signal-value-consumer")
-                   (log-task :log "signal-timeseries-consumer")
+                   (log-task :log "signal/value")
                    (redis-tasks/write-signals-timeseries :write-to-redis)]
             job (-> empty-job
                     (add-tasks tasks)
@@ -32,10 +32,12 @@
 
 (s/defn ^:always-validate transform-signal-config :- gs/SignalConfig
         [segment :- gs/MqttSignalConfig]
-        (-> segment
-            (assoc :name (get-in segment [:data :name]))
-            (assoc :type (get-in segment [:data :type]))
-            (dissoc :data)))
+        (let [segment* (-> segment
+                           (assoc :name (get-in segment [:data :name]))
+                           (assoc :type (get-in segment [:data :type]))
+                           (assoc :at (read-string (:at segment)))
+                           (dissoc :data))]
+             segment*))
 
 (defn signal-config-consumer []
       (let [
@@ -77,8 +79,6 @@
                                                   (keyword)))
                            (assoc :name (get-in segment [:data :name]))
                            (dissoc :at :data))]
-             (log/debug "segment" segment)
-             (log/debug "segment*" segment*)
              segment*))
 
 (defn light-config-consumer []

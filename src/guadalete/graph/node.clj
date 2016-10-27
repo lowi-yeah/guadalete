@@ -42,14 +42,17 @@
 
 (s/defn ^:always-validate dissect-signal :- gs/NodeAndEdgeDescription
         "Dissect a Signal.
-        Easy as… Becuse the signal but consists of one source-node emitting values"
+        Split into two tasks: 1: Read data from kafka. 2: Coerce data to appropriate schema"
         [node :- gs/Node
          item :- gs/Signal]
         (let [link (first (:links node))
-              uber-node (node-description node item (:id link))]
-             (log/debug "dissect-signal" uber-node)
-             {:nodes [uber-node]
-              :edges []}))
+
+              read-node (node-description node item "read")
+              coerce-node (node-description node item (:id link))
+              uber-edge {:from (:id read-node)
+                         :to   (:id coerce-node)}]
+             {:nodes [read-node coerce-node]
+              :edges [uber-edge]}))
 
 (s/defn ^:always-validate dissect-passthrough-node :- gs/NodeAndEdgeDescription
         "Passthrough nodes are nodes that have incoming as well as outging links
@@ -98,7 +101,33 @@
 (s/defn ^:always-validate dissect-color :- gs/NodeAndEdgeDescription
         [node :- gs/Node
          item :- gs/Color]
+        (log/debug "dissect-color" node item)
         (dissect-passthrough-node node item))
+
+(s/defn ^:always-validate dissect-transition :- gs/NodeAndEdgeDescription
+        [node :- gs/Node
+         item :- gs/Transition]
+
+        (let [in-node (->> (:links node)
+                           (filter inlet?)
+                           (map #(node-description node item (:id %)))
+                           (first))
+              out-node (->> (:links node)
+                            (filter outlet?)
+                            (map #(node-description node item (:id %)))
+                            (first))
+              delay-node (node-description node item "delay")
+              ease-node (node-description node item "ease")
+
+              uber-nodes [in-node delay-node ease-node out-node]
+              uber-edges [{:from (:id in-node)
+                           :to   (:id delay-node)}
+                          {:from (:id delay-node)
+                           :to   (:id ease-node)}
+                          {:from (:id ease-node)
+                           :to   (:id out-node)}]]
+             {:nodes uber-nodes
+              :edges uber-edges}))
 
 (s/defn dissect-light :- [gs/NodeDescription]
         [node :- gs/Node
@@ -126,8 +155,11 @@
 
 (defmethod dissect :mixer
            [{:keys [node item]}]
-           (log/debug "dissect-mixer" node item)
            (dissect-mixer node item))
+
+(defmethod dissect :transition
+           [{:keys [node item]}]
+           (dissect-transition node item))
 
 (defmethod dissect :color
            [{:keys [node item]}]
@@ -136,3 +168,4 @@
 (defmethod dissect :light
            [{:keys [node item]}]
            (dissect-light node item))
+

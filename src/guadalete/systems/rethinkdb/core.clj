@@ -71,8 +71,7 @@
         [conn]
         (let [scenes (-> (r/table "scene")
                          (r/run conn))]
-             (log/debug "all scenes" (into [] scenes))
-             (gs/coerce-scenes scenes)))
+             (gs/coerce-all scenes :scene)))
 
 (defn all-lights
       "Retrieves all scenes from all rooms"
@@ -121,26 +120,20 @@
        "removes the :created and :updated fields from each entry in the given collection"
        [type coll]
        (->> coll
-            (map (fn [item]
-                     (condp = type
-                            :light (gs/coerce-light item)
-                            :mixer (gs/coerce-mixer item)
-                            :signal (gs/coerce-signal item)
-                            :color (gs/coerce-color item)
-                            :constant (gs/coerce-constant item))))))
+            (map #(gs/coerce! % type))))
 
-(defn all-items
-      "Retrieves all 'items' from the database.
-      An item, in this context is anything that can be used in a PD graph, eg. lights, colors, signals, etc…"
-      [conn]
-      (let [items [:light :mixer :signal :color :constant]]
-           (->> items
-                (map (fn [i] [i (->> i
-                                     (all conn)
-                                     (purge)
-                                     (coerce i)
-                                     (into []))]))
-                (into {}))))
+(s/defn ^:always-validate all-items :- gs/Items
+        "Retrieves all 'items' from the database.
+        An item, in this context is anything that can be used in a PD graph, eg. lights, colors, signals, etc…"
+        [conn]
+        (let [items [:light :mixer :signal :color :constant :transition]]
+             (->> items
+                  (map (fn [i] [i (->> i
+                                       (all conn)
+                                       (purge)
+                                       (coerce i)
+                                       (into []))]))
+                  (into {}))))
 
 ;//    __ _
 ;//   / _| |_____ __ _____
@@ -162,26 +155,17 @@
             :ilk ilk})
 
 (defmethod assemble-item :color [ilk flow-reference node item]
-           ;(log/debug "assemble color item")
-           ;(log/debug "\t ilk" ilk)
-           ;(log/debug "\t flow-reference" flow-reference)
-           ;(log/debug "\t node" node)
-           ;(log/debug "\t item" item)
-           ;(log/debug "")
            (let [id (str (:node-id flow-reference) "-" (:id flow-reference))]
                 {:id id :ilk ilk}))
 
 (defmethod assemble-item :mixer [ilk flow-reference node item]
-           (log/debug "assemble mixer item" node item)
+           item)
+
+(defmethod assemble-item :transition [ilk flow-reference node item]
+           (log/debug "assemble transition item" node item)
            item)
 
 (defmethod assemble-item :light [ilk flow-reference node item]
-           ;(log/debug "assemble light item")
-           ;(log/debug "\t ilk" ilk)
-           ;(log/debug "\t flow-reference" flow-reference)
-           ;(log/debug "\t node" node)
-           ;(log/debug "\t item" item)
-           ;(log/debug "")
            (let [id (:id flow-reference)]
                 {:id       id
                  :ilk      ilk

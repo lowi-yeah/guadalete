@@ -18,6 +18,7 @@
       [guadalete.systems.onyx-jobs :refer [job-runner]]
       [guadalete.systems.zookeeper :refer [zookeeper]]
       [guadalete.systems.bookkeeper :refer [multi-bookie-server]]
+      [guadalete.onyx.plugin.mqtt]
       [guadalete.config
        [core :as config]
        [kafka :as kafka-config]]))
