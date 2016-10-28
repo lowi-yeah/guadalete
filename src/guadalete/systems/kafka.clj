@@ -18,8 +18,8 @@
 
 (defn- bootstrap-topics
        "Check whether the given topics exists. If not, create them."
-       [zookeeper-address topics]
-       (with-open [zk (admin/zk-client zookeeper-address)]
+       [zookeeper topics]
+       (with-open [zk (admin/zk-client zookeeper)]
                   (doseq [topic topics]
                          (if-not (admin/topic-exists? zk (:name topic))
                                  (do
@@ -28,21 +28,21 @@
                                                         :replication-factor (:replication-factor topic)
                                                         :config             (:config-factor topic)}))))))
 
-(defrecord Kafka [zookeeper-address kafka-topics]
+(defrecord Kafka [zookeeper topics]
            component/Lifecycle
            (start [component]
                   (log/info "**************** Starting Kafka component ***************")
-                  (log/debug "**** zookeeper-address" zookeeper-address)
-                  (log/debug "**** kafka-topics" kafka-topics)
+                  (log/debug "**** zookeeper" zookeeper)
+                  (log/debug "**** topics" topics)
                   (try
-                    (bootstrap-topics zookeeper-address kafka-topics)
-                    (let [brokers (-> {"zookeeper.connect" zookeeper-address}
+                    (bootstrap-topics zookeeper (vals topics))
+                    (let [brokers (-> {"zookeeper.connect" zookeeper}
                                       (brokers)
                                       (broker-list))]
                          (log/debug "**** brokers" brokers)
                          (assoc component :brokers brokers))
                     (catch Exception e
-                      (log/error "ERROR in Onyx component" e)
+                      (log/error "ERROR in Kafka component" e)
                       (print-stack-trace e)
                       component)))
 
@@ -50,5 +50,5 @@
                  (log/info "Stopping Kafka component")
                  (dissoc component :brokers)))
 
-(defn new-kafka [config]
+(defn kafka [config]
       (map->Kafka config))

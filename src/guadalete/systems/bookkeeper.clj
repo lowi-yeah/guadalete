@@ -134,9 +134,10 @@
                    (doseq [server (:servers component)]
                           (component/stop server)))))
 
-(defn multi-bookie-server [env-config]
+(defn multi-bookie-server [config]
       (info "Starting Bookie servers")
-      (map->BookieServers {:env-config env-config}))
+      (info "\t config:" config)
+      (map->BookieServers {:env-config config}))
 ;
 ;(defmethod clojure.core/print-method BookieServers
 ;           [system ^java.io.Writer writer]

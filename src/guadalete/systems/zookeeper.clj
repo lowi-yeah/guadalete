@@ -1,7 +1,7 @@
 (ns guadalete.systems.zookeeper
     (:require [clojure.core.async :refer [chan >!! <!! close! thread alts!! offer!]]
       [com.stuartsierra.component :as component]
-      [taoensso.timbre :refer [fatal warn info trace]]
+      [taoensso.timbre :refer [debug fatal warn info trace]]
       [onyx.log.curator :as zk]
       [onyx.extensions :as extensions]
       [onyx.static.default-vals :refer [defaults]]
@@ -97,41 +97,46 @@
 
            (start [component]
                   (s/validate os/PeerClientConfig config)
-                  (taoensso.timbre/info "Starting ZooKeeper" config)
+                  (info "Starting ZooKeeper" config)
                   (BasicConfigurator/configure)
                   (let [onyx-id (:onyx/tenancy-id config)
                         conn (zk/connect (:zookeeper/address config))
                         kill-ch (chan)]
-                       (zk/create conn root-path :persistent? true)
-                       (zk/create conn (prefix-path onyx-id) :persistent? true)
-                       (zk/create conn (pulse-path onyx-id) :persistent? true)
-                       (zk/create conn (log-path onyx-id) :persistent? true)
-                       (zk/create conn (job-hash-path onyx-id) :persistent? true)
-                       (zk/create conn (catalog-path onyx-id) :persistent? true)
-                       (zk/create conn (workflow-path onyx-id) :persistent? true)
-                       (zk/create conn (flow-path onyx-id) :persistent? true)
-                       (zk/create conn (lifecycles-path onyx-id) :persistent? true)
-                       (zk/create conn (windows-path onyx-id) :persistent? true)
-                       (zk/create conn (triggers-path onyx-id) :persistent? true)
-                       (zk/create conn (job-metadata-path onyx-id) :persistent? true)
-                       (zk/create conn (task-path onyx-id) :persistent? true)
-                       (zk/create conn (sentinel-path onyx-id) :persistent? true)
-                       (zk/create conn (chunk-path onyx-id) :persistent? true)
-                       (zk/create conn (origin-path onyx-id) :persistent? true)
-                       (zk/create conn (job-scheduler-path onyx-id) :persistent? true)
-                       (zk/create conn (messaging-path onyx-id) :persistent? true)
-                       (zk/create conn (exception-path onyx-id) :persistent? true)
+                       (try
+                         (zk/create conn root-path :persistent? true)
+                         (zk/create conn (prefix-path onyx-id) :persistent? true)
+                         (zk/create conn (pulse-path onyx-id) :persistent? true)
+                         (zk/create conn (log-path onyx-id) :persistent? true)
+                         (zk/create conn (job-hash-path onyx-id) :persistent? true)
+                         (zk/create conn (catalog-path onyx-id) :persistent? true)
+                         (zk/create conn (workflow-path onyx-id) :persistent? true)
+                         (zk/create conn (flow-path onyx-id) :persistent? true)
+                         (zk/create conn (lifecycles-path onyx-id) :persistent? true)
+                         (zk/create conn (windows-path onyx-id) :persistent? true)
+                         (zk/create conn (triggers-path onyx-id) :persistent? true)
+                         (zk/create conn (job-metadata-path onyx-id) :persistent? true)
+                         (zk/create conn (task-path onyx-id) :persistent? true)
+                         (zk/create conn (sentinel-path onyx-id) :persistent? true)
+                         (zk/create conn (chunk-path onyx-id) :persistent? true)
+                         (zk/create conn (origin-path onyx-id) :persistent? true)
+                         (zk/create conn (job-scheduler-path onyx-id) :persistent? true)
+                         (zk/create conn (messaging-path onyx-id) :persistent? true)
+                         (zk/create conn (exception-path onyx-id) :persistent? true)
 
-                       (initialize-origin! conn config onyx-id)
-                       (assoc component :conn conn :prefix onyx-id :kill-ch kill-ch)))
+                         (initialize-origin! conn config onyx-id)
+                         (assoc component :conn conn :prefix onyx-id :kill-ch kill-ch)
+
+                         (catch Exception e
+                           (fatal "Error during zookeper initialization:" e)
+                           component))))
            (stop [component]
-                 (taoensso.timbre/info "Stopping ZooKeeper")
+                 (info "Stopping ZooKeeper")
                  (if (:conn component)
                    (zk/close (:conn component)))
                  (if (:kill-ch component)
                    (close! (:kill-ch component)))
                  component))
-;
+
 ;(defmethod clojure.core/print-method ZooKeeper
 ;           [system ^java.io.Writer writer]
 ;           (.write writer "#<ZooKeeper Component>"))

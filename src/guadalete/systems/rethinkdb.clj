@@ -1,4 +1,4 @@
-(ns guadalete.systems.rethinkdb.core
+(ns guadalete.systems.rethinkdb
     (:require
       [com.stuartsierra.component :as component]
       [rethinkdb.query :as r]
@@ -221,5 +221,6 @@
            (start [component] component)
            (stop [component] component))
 
-(defn new-rethinkdb [config]
+(defn rethinkdb [config]
+      (log/debug "connecting to rethinkDB." config)
       (map->RethinkDB config))

@@ -1,7 +1,7 @@
 (ns guadalete.onyx.jobs.core
     (:require
       [onyx.api]
-      [guadalete.systems.rethinkdb.core :as db]
+      [guadalete.systems.rethinkdb :as db]
       [guadalete.onyx.jobs.scene :as scene-jobs]
       [guadalete.onyx.jobs.base :as base-jobs]
       [guadalete.onyx.jobs.development :as dev-jobs]

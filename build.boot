@@ -32,6 +32,7 @@
                   [danlentz/clj-uuid "0.1.6"]
                   [javax.jmdns/jmdns "3.4.1"]
                   [commons-net "3.0.1"]
+                  [eu.cassiel/clojure-zeroconf "1.2.0"]
                   [overtone/at-at "1.1.1"]])
 (require
   '[reloaded.repl :as repl :refer [start stop go reset]]
@@ -39,88 +40,11 @@
   '[environ.boot :refer [environ]]
   '[system.boot :refer [system run]])
 
-(def zk-dev-config
-  {:zookeeper/address     "zookeeper1:2181"
-   :zookeeper/server?     "false"
-   :zookeeper.server/port 2181})
-
-(def kafka-consumer-dev-config
-  {:kafka-consumer/config
-   {"zookeeper.connect" "zookeeper1:2181"
-    "group.id"          "guadalete-ui.consumer"
-    "auto.offset.reset" "smallest"
-    ;"offsets.storage"             "kafka"
-    ;"auto.commit.interval.ms"     "100"
-    ;"auto.commit.enable"          "true"
-    ;"fetch.min.bytes"             "1"
-    ;"socket.timeout.ms"           "1000"
-    ;"socket.receive.buffer.bytes" "1024"
-    }})
-
-(def onyx-dev-config
-  {:onyx.peer/n-peers                     16
-   ;:onyx.peer/job-scheduler               :onyx.job-scheduler/greedy
-   ;:onyx.peer/job-scheduler               :onyx.job-scheduler/round-robin
-   :onyx.peer/job-scheduler               :onyx.job-scheduler/balanced
-   :onyx.messaging/impl                   :aeron
-   :onyx.messaging/peer-port              40199
-   :onyx.messaging/bind-addr              "localhost"
-   :onyx.messaging/allow-short-circuit?   "false"
-   :onyx.log/config                       {}
-   :onyx.messaging.aeron/embedded-driver? "true"
-   })
-
-(def rethinkdb-dev-config
-  {:rethinkdb/host     "127.0.0.1"
-   :rethinkdb/port     28015
-   :rethinkdb/auth-key ""
-   :rethinkdb/db       "guadalete"
-   :rethinkdb/tables   ["signal" "light" "room" "switch"]})
-
-(def redis-dev-config
-  {:redis/uri             "redis://redis1:6379"
-   :redis/read-timeout-ms 8000})
-
-
-(def mqtt-dev-config
-  {:mqtt/broker "tcp://mosquitto1:1883"
-   :mqtt/id     "guadalete-core-client"
-   :mqtt/topics {"/sgnl/#"  0
-                 "/swtch/#" 0
-                 "/lght/c/+" 0}})
-
-(def forecast-dev-config
-  {:forecast-key "6c6ff80d697e050eff942334032eaa97"})
-
-(def artnet-config
-  {:artnet/address "10.17.0.201"})
-
-(def osc-dev-config
-  {:osc/port 12101})
-
-(def midi-dev-config
-  {:midi/port 6257})
-
-
-
-(defn- dev-config
-       "Merge the individual component configurations into one big map."
-       []
-       (merge zk-dev-config
-              onyx-dev-config
-              mqtt-dev-config
-              rethinkdb-dev-config
-              forecast-dev-config
-              redis-dev-config
-              osc-dev-config
-              midi-dev-config
-              kafka-consumer-dev-config))
-
 (deftask dev
          "Run a restartable system in the r3pl."
          []
          (comp
-           (environ :env (dev-config))
+           (environ :env {:config-file "resources/config.edn"})
            (speak)
            (watch :verbose true)
            (system :sys #'dev-system :auto true :files ["onyx.clj"])
