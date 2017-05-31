@@ -6,7 +6,7 @@
       [cassiel.zeroconf.client :as zeroconf]))
 
 (defn- examine* [listener retry-count]
-       (if (> retry-count 1)
+       (if (> retry-count 5)
          {}
          (let [_ (Thread/sleep (* 1000 retry-count))
                description (zeroconf/examine listener)]
@@ -26,6 +26,7 @@
                                        [service-name (zeroconf/listen service-id)])
                                    services))]
            (Thread/sleep 1000)
+           (log/debug "listeners" listeners)
            (doall
              (->> listeners
                   (map (fn [[service-name listener]]

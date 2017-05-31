@@ -12,7 +12,7 @@
 
 
 ;; # How to make the flow-graph
-;; Upon startup, all scenes are beining loaded from the database and put into an ubergraph for further computations
+;; Upon startup, all scenes are retrieved from the database and put into an ubergraph for further computations
 ;; To create the graph, the raw-data documents coming in from the db needs to be prepared in a way that the
 ;; ubergraph can be created easily.
 ;;

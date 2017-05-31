@@ -9,7 +9,7 @@
       [onyx.messaging.aeron :refer [aeron-messenger]]
       [com.stuartsierra.component :as component]
       [guadalete.systems.onyx :refer [onyx]]
-      [guadalete.utils.util :refer [load-config load-zeroconfig]]
+      [guadalete.utils.util :refer [load-config load-zeroconfig load-static-config pretty]]
       [guadalete.config.zeroconf :as zeroconf]
       [guadalete.systems.kafka :refer [kafka]]
       [guadalete.systems.mqtt :refer [mqtt]]
@@ -27,15 +27,17 @@
       []
       (log/info "starting development system")
       (let [
-            ;config (load-config)
-            config (load-zeroconfig)]
+            config (load-static-config)
+            ;config (load-zeroconfig)
+            ]
+           (log/debug "configuration:" config)
            (component/system-map
              :mqtt (mqtt (:mqtt config))
              :rethinkdb (rethinkdb (:rethinkdb config))
              :zookeeper (zookeeper (:zookeeper config))
              :kafka (kafka (:kafka config))
-             ;:bookkeeper (component/using (multi-bookie-server (:onyx config)) [:zookeeper])
-             ;:onyx (onyx (:onyx config))
+             :bookkeeper (component/using (multi-bookie-server (:onyx config)) [:zookeeper])
+             :onyx (onyx (:onyx config))
              ;:job-runner (component/using (job-runner) [:onyx :rethinkdb])
              )))
 

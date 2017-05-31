@@ -26,6 +26,8 @@
            component/Lifecycle
            (start [component]
                   (log/info "starting component: JobRunner")
+                  (log/info "rethinkdb: " rethinkdb)
+                  (log/info "onyx: " onyx)
                   (try
                     (let [
                           peer-config (:peer-config onyx)

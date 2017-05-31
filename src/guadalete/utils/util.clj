@@ -7,7 +7,8 @@
       [schema.core :as s]
       [clj-time.core :as t]
       [clj-time.coerce :as tc]
-      [schema.core :as s] [guadalete.config.zeroconf :as zeroconf]))
+      [schema.core :as s]
+      [guadalete.config.zeroconf :as zeroconf]))
 
 (defn deep-merge
       "Deep merge two maps"
@@ -62,7 +63,7 @@
       (reduce deep-merge (map (comp edn/read-string slurp)
                               [(:config-file env)])))
 
-(defn zeroconfigure-kafka [config zero-zookeeper]
+(defn configure-kafka [config zero-zookeeper]
       (try
         (let [zk-url (-> zero-zookeeper
                          (get :urls)
@@ -74,7 +75,7 @@
         (catch NullPointerException e
           config)))
 
-(defn zeroconfigure-mqtt [config zero-mqtt]
+(defn configure-mqtt [config zero-mqtt]
       (try
         (let [broker-url (-> zero-mqtt
                              (get :urls)
@@ -84,7 +85,7 @@
         (catch NullPointerException e
           config)))
 
-(defn zeroconfigure-redis [config zero-redis]
+(defn configure-redis [config zero-redis]
       (try
         (let [uri (-> zero-redis
                       (get :urls)
@@ -94,7 +95,7 @@
         (catch NullPointerException e
           config)))
 
-(defn zeroconfigure-rethinkdb [config zero-rethink]
+(defn configure-rethinkdb [config zero-rethink]
       (try
         (let [[host port] (-> zero-rethink
                               (get :urls)
@@ -107,7 +108,7 @@
         (catch NullPointerException e
           config)))
 
-(defn zeroconfigure-zookeeper [config zero-zookeeper]
+(defn configure-zookeeper [config zero-zookeeper]
       (try
         (let [zk-url (-> zero-zookeeper
                          (get :urls)
@@ -118,21 +119,39 @@
         (catch NullPointerException e
           config)))
 
+(defn configure-onyx [config zero-zookeeper]
+      (log/debug "zeroconfigure onyx")
+      (try
+        (let [zk-url (-> zero-zookeeper
+                         (get :urls)
+                         (first)
+                         (clojure.string/replace #"http://" ""))
+              tenancy-id (str (java.util.UUID/randomUUID))]
+             (-> config
+                 (assoc-in [:onyx :env-config :zookeeper/address] zk-url)
+                 (assoc-in [:onyx :env-config :onyx/tenancy-id] tenancy-id)
+                 (assoc-in [:onyx :peer-config :zookeeper/address] zk-url)
+                 (assoc-in [:onyx :peer-config :onyx/tenancy-id] tenancy-id)))
+        (catch Exception e
+          (log/error "Error during Onyx zeroconfiguration" e)
+          config)))
 
-(defn zeroconfigure [config zeroconf-servers]
-      (log/debug "zeroconf-servers" (pretty zeroconf-servers))
-      (let [config* (-> config
-                        (zeroconfigure-kafka (:zookeeper zeroconf-servers))
-                        (zeroconfigure-mqtt (:mqtt zeroconf-servers))
-                        (zeroconfigure-redis (:redis zeroconf-servers))
-                        (zeroconfigure-rethinkdb (:rethinkdb zeroconf-servers))
-                        (zeroconfigure-zookeeper (:zookeeper zeroconf-servers)))]
-           (log/debug "config*" (pretty config*))
-
-           config*))
+(defn configure [config servers]
+      (log/debug "zeroconf-servers" (pretty servers))
+      (-> config
+          (configure-kafka (:zookeeper servers))
+          (configure-mqtt (:mqtt servers))
+          (configure-redis (:redis servers))
+          (configure-rethinkdb (:rethinkdb servers))
+          (configure-zookeeper (:zookeeper servers))
+          (configure-onyx (:zookeeper servers))))
 
 (defn load-zeroconfig []
       (let [config (load-config)
             zeroconf-servers (zeroconf/discover (:zeroconf config))]
-           (zeroconfigure config zeroconf-servers)))
+           (configure config zeroconf-servers)))
+
+(defn load-static-config []
+      (let [config (load-config)]
+           (configure config (:static-servers config))))
 

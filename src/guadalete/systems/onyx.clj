@@ -20,6 +20,7 @@
            component/Lifecycle
            (start [component]
                   (log/info "\n\n**************** Starting Onyx ****************\n")
+                  (log/debug "peer-config: " peer-config)
                   (try
                     (let [peer-group (onyx.api/start-peer-group peer-config)
                           peers (onyx.api/start-peers n-peers peer-group)]
@@ -45,4 +46,5 @@
                         :peers nil)))
 
 (defn onyx [config]
+      (log/debug "ONYX config" config)
       (map->Onyx config))

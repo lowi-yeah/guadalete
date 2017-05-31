@@ -44,9 +44,9 @@
                               (map make-graph)
                               (scene-jobs/from-graphs))
               signal-config (base-jobs/signal-config-consumer)
-              signal-value (base-jobs/signal-timeseries-consumer)
               light-config (base-jobs/light-config-consumer)
-              all-jobs (conj scene-jobs signal-config light-config )
+              all-jobs (conj signal-config light-config )
+              ;all-jobs (conj scene-jobs signal-config light-config )
               ;all-jobs (conj scene-jobs signal-config light-config signal-value)
               ;all-jobs (conj () signal-config light-config signal-value)
               ]

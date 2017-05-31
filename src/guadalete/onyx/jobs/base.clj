@@ -37,6 +37,7 @@
                            (assoc :type (get-in segment [:data :type]))
                            (assoc :at (read-string (:at segment)))
                            (dissoc :data))]
+             (log/debug "transform-signal-config" segment*)
              segment*))
 
 (defn signal-config-consumer []
