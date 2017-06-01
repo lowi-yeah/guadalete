@@ -10,6 +10,7 @@
                   [clj-time "0.13.0"]
                   [clojurewerkz/machine_head "1.0.0"]
                   [com.apa512/rethinkdb "0.15.19"]
+                  [com.novemberain/monger "3.1.0"]
                   [org.clojure/tools.nrepl "0.2.12"]
                   [org.onyxplatform/onyx-kafka "0.10.0.0-beta17"]
                   [org.onyxplatform/lib-onyx "0.10.0.0"]

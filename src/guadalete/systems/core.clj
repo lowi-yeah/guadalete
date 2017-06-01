@@ -3,13 +3,15 @@
       [com.stuartsierra.component :as component]
       (system.components [repl-server :refer [new-repl-server]])
       [taoensso.timbre :as log]
-      [guadalete.systems.onyx :refer [onyx]]
+      ;[guadalete.systems.onyx :refer [onyx]]
       [guadalete.utils.util :refer [load-config load-zeroconfig load-static-config pretty]]
       [guadalete.config.zeroconf :as zeroconf]
       ;[guadalete.systems.kafka :refer [kafka]]
       [guadalete.systems.mqtt :refer [mqtt]]
+      [guadalete.systems.mongodb :refer [mongodb]]
+      [guadalete.systems.debug :refer [debug]]
+
       ;[guadalete.systems.async :refer [new-async]]
-      ;[guadalete.systems.rethinkdb :refer [rethinkdb]]
       ;[guadalete.systems.kafka-consumer.core :refer [new-kafka-consumer]]
       ;[guadalete.systems.kafka-async :refer [new-kafka-async-pipe]]
       ;[guadalete.systems.onyx-jobs :refer [job-runner]]
@@ -28,7 +30,8 @@
             ]
            (component/system-map
              :mqtt (mqtt (:mqtt config))
-             ;:rethinkdb (rethinkdb (:rethinkdb config))
+             :mongodb (mongodb(:mongodb config))
+             :debug (component/using (debug) [:mongodb])
              ;:zookeeper (zookeeper (:zookeeper config))
              ;:kafka (kafka (:kafka config))
              ;:bookkeeper (component/using (multi-bookie-server (:onyx config)) [:zookeeper])

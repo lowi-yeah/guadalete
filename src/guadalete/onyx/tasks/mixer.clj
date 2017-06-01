@@ -19,23 +19,25 @@
 (defn multiply [& signal-values] (reduce * signal-values))
 
 (defn mix! [mixin-fn-key state segment]
-      (let [funktion (kw->fn mixin-fn-key)
-            values (map #(get % :value) (vals state))
-            mix (if (not-empty values)
-                  (apply funktion values)
-                  :empty)
-            timestamps (->> state (vals) (map #(get % :at)))
-            at (if (not-empty timestamps)
-                 (apply max timestamps)
-                 :never)]
-           (if (not= mix :empty)
-             ; return a tupe with the current segment first
-             ; it will be filtered again in the flow condition
-             ; this is necessart, since otherwise the state won't update
-             [segment {:value mix :at at :mixed true}]
-             ; return the segment and NOT an empty vector, as otherwise the state will never get initialized
-             ; strange, but what is one to do?
-             [segment])))
+      ;(let [funktion (kw->fn mixin-fn-key)
+      ;      values (map #(get % :value) (vals state))
+      ;      mix (if (not-empty values)
+      ;            (apply funktion values)
+      ;            :empty)
+      ;      timestamps (->> state (vals) (map #(get % :at)))
+      ;      at (if (not-empty timestamps)
+      ;           (apply max timestamps)
+      ;           :never)]
+      ;     (if (not= mix :empty)
+      ;       ; return a tupe with the current segment first
+      ;       ; it will be filtered again in the flow condition
+      ;       ; this is necessart, since otherwise the state won't update
+      ;       [segment {:value mix :at at :mixed true}]
+      ;       ; return the segment and NOT an empty vector, as otherwise the state will never get initialized
+      ;       ; strange, but what is one to do?
+      ;       [segment]))
+      [segment]
+      )
 
 (defn inject-state
       [{:keys [onyx.core/windows-state onyx.core/params]} _lifecycle]
