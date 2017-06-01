@@ -3,8 +3,6 @@
     (:require
       [clojure.core.async :refer [chan pub sub >!! <!! close!]]
       [com.stuartsierra.component :as component]
-      [clj-kafka.admin :as admin]
-      [clj-kafka.zk :refer [broker-list brokers]]
       [onyx.api]
       [taoensso.timbre :as log]
       ))

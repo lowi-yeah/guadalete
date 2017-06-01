@@ -7,7 +7,6 @@
 (ns guadalete.systems.mqtt
     (:require
       [com.stuartsierra.component :as component]
-      [clj-kafka.admin :as admin]
       [onyx.api]
       [clojurewerkz.machine-head.client :as mh]
       [taoensso.timbre :as log]))

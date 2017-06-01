@@ -1,7 +1,6 @@
 (ns guadalete.config.zeroconf
     (:require
       [com.stuartsierra.component :as component]
-      [clj-kafka.admin :as admin]
       [taoensso.timbre :as log]
       [cassiel.zeroconf.client :as zeroconf]))
 

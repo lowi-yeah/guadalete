@@ -1,14 +1,12 @@
 (ns guadalete.core
     (:gen-class)
     (:require
-      [reloaded.repl :refer [init start stop reset]]
-      [guadalete.systems.core :refer [prod-system]]
-      [onyx.plugin.kafka]
-      [onyx.plugin.redis]))
+      [system.repl :refer [set-init! start]]
+      [guadalete.systems.core :refer [prod-system]]))
 
 (defn -main
       "Start a production system."
       [& args]
       (let [system (or (first args) #'prod-system)]
-           (init)
+           (set-init! system)
            (start)))

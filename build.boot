@@ -1,43 +1,37 @@
 (set-env!
   :source-paths #{"src"}
-  :dependencies '[[lein-light-nrepl "0.3.3"]
-                  [aero "0.1.5" :exclusions [prismatic/schema]]
+  :dependencies '[[aero "1.1.2" :exclusions [prismatic/schema]]
                   [org.clojure/clojure "1.8.0"]
-                  [org.clojure/core.async "0.2.374"]
-                  [org.danielsz/system "0.2.0"]
-                  [environ "1.0.2"]
-                  [boot-environ "1.0.2"]
-                  [cheshire "5.6.1"]
-                  [clj-time "0.11.0"]
-                  [clojurewerkz/machine_head "1.0.0-beta9"]
+                  [org.clojure/core.async "0.3.443"]
+                  [org.danielsz/system "0.4.0"]
+                  [environ "1.1.0"]
+                  [boot-environ "1.1.0"]
+                  [cheshire "5.7.1"]
+                  [clj-time "0.13.0"]
+                  [clojurewerkz/machine_head "1.0.0"]
                   [com.apa512/rethinkdb "0.15.19"]
                   [org.clojure/tools.nrepl "0.2.12"]
-                  [org.onyxplatform/onyx "0.9.9"]
-                  [org.onyxplatform/onyx-kafka-0.8 "0.9.9.1-SNAPSHOT"]
-                  ;[org.onyxplatform/onyx-kafka "0.9.4.0"]
+                  [org.onyxplatform/onyx-kafka "0.10.0.0-beta17"]
+                  [org.onyxplatform/lib-onyx "0.10.0.0"]
                   [org.onyxplatform/onyx-redis "0.9.0.1"]
-                  [org.onyxplatform/lib-onyx "0.9.7.1"]
-                  [com.taoensso/encore "2.52.1"]
-                  [com.taoensso/carmine "2.12.2"]
-                  [com.taoensso/timbre "4.3.1"]
+
+                  [com.taoensso/encore "2.91.0"]
+                  [com.taoensso/carmine "2.16.0"]
+                  [com.taoensso/timbre "4.10.0"]
+
                   [thi.ng/math "0.2.1"]
                   [thi.ng/color "1.2.0"]
                   [clojurewerkz/statistiker "0.1.0-SNAPSHOT"]
-                  [ubergraph "0.2.3"]
+                  [ubergraph "0.3.1"]
                   [thi.ng/tweeny "0.1.0-SNAPSHOT"]
                   [forecast-clojure "1.0.3"]
                   [net.eliosoft/artnet4j "0001"]
                   [overtone/osc-clj "0.9.0"]
-                  [overtone/midi-clj "0.5.0"]
                   [danlentz/clj-uuid "0.1.6"]
-                  [javax.jmdns/jmdns "3.4.1"]
-                  [commons-net "3.0.1"]
-                  [eu.cassiel/clojure-zeroconf "1.2.0"]
-                  [overtone/at-at "1.1.1"]])
+                  [eu.cassiel/clojure-zeroconf "1.2.0"]])
 (require
-  '[reloaded.repl :as repl :refer [start stop go reset]]
-  '[guadalete.systems.core :refer [dev-system]]
   '[environ.boot :refer [environ]]
+  '[guadalete.systems.core :refer [dev-system]]
   '[system.boot :refer [system run]])
 
 (deftask dev
@@ -45,7 +39,6 @@
          []
          (comp
            (environ :env {:config-file "resources/config.edn"})
-           (speak)
            (watch :verbose true)
            (system :sys #'dev-system :auto true :files ["onyx.clj"])
            (repl :server true)))
